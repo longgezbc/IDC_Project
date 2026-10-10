@@ -1,5 +1,8 @@
 # IDC_Project
 
+[![Frontend CI](https://github.com/longgezbc/IDC_Project/actions/workflows/frontend.yml/badge.svg)](https://github.com/longgezbc/IDC_Project/actions/workflows/frontend.yml)
+[![Backend CI](https://github.com/longgezbc/IDC_Project/actions/workflows/backend.yml/badge.svg)](https://github.com/longgezbc/IDC_Project/actions/workflows/backend.yml)
+
 数据中心综合布线项目管理系统（IDC 项目管理系统）
 
 ## 项目结构
