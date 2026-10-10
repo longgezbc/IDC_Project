@@ -1,0 +1,78 @@
+# ============================================================
+# 后端 CI（Hbsz_IDC_System_end — Spring Boot 3 + Java 17 + Maven）
+#
+# 触发条件：
+#   - push / pull_request 到 main 分支，且改动涉及后端目录或本工作流文件
+#   - 支持在 Actions 页面手动触发（workflow_dispatch）
+#
+# 测试说明：
+#   单元测试通过 application-test.yml 使用 H2 内存库（MODE=MySQL），
+#   Redis 为惰性连接，无需真实 MySQL/Redis，可在 CI 独立运行。
+#
+# 执行流程：
+#   1. 检出代码
+#   2. 安装 Temurin JDK 17（pom.xml java.version=17）并缓存 Maven 依赖
+#   3. mvn clean test 依赖下载 + 全量 JUnit 单元测试
+#      （clean 防止过期 test-classes 干扰，本地遗留问题在 CI 天然不存在）
+#   4. mvn package -DskipTests 打包 Spring Boot 可执行 JAR（复用上一步编译产物）
+#   5. 上传 JAR 构建产物（保留 7 天）
+# ============================================================
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Hbsz_IDC_System_end/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Hbsz_IDC_System_end/**'
+      - '.github/workflows/backend.yml'
+  workflow_dispatch: {}
+
+# 同一分支的新推送自动取消旧任务，节省额度
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Test + Package (Spring Boot)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Hbsz_IDC_System_end
+    steps:
+      # 1. 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 安装 JDK 17 + 缓存 ~/.m2 依赖（按 pom.xml 哈希）
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # 3. 依赖安装 + 全量单元测试
+      - name: Run tests (JUnit)
+        run: mvn -B -ntp clean test
+
+      # 4. 构建打包（跳过已通过的测试，复用编译产物）
+      - name: Package JAR
+        run: mvn -B -ntp package -DskipTests
+
+      # 5. 上传 Spring Boot 可执行 JAR
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: Hbsz_IDC_System_end/target/*.jar
+          retention-days: 7

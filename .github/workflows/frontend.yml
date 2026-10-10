@@ -1,0 +1,83 @@
+# ============================================================
+# 前端 CI（Hbsz_IDC_System — Vue 3 + Element Plus + Vite）
+#
+# 触发条件：
+#   - push / pull_request 到 main 分支，且改动涉及前端目录或本工作流文件
+#   - 支持在 Actions 页面手动触发（workflow_dispatch）
+#
+# 执行流程：
+#   1. 检出代码
+#   2. 安装 Node.js 20 LTS（按 lock 文件缓存 npm 依赖）
+#   3. npm ci 严格安装依赖（可复现）
+#   4. ESLint 代码检查（只校验不修复）
+#   5. Vitest 单元测试
+#   6. Vite 生产构建
+#   7. 上传 dist 构建产物（保留 7 天）
+# ============================================================
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Hbsz_IDC_System/**'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Hbsz_IDC_System/**'
+      - '.github/workflows/frontend.yml'
+  workflow_dispatch: {}
+
+# 同一分支的新推送自动取消旧任务，节省额度
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Lint + Test + Build (Vue 3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: Hbsz_IDC_System
+    steps:
+      # 1. 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js 20 LTS，并按 package-lock.json 缓存 npm 依赖
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: Hbsz_IDC_System/package-lock.json
+
+      # 3. 依赖安装（npm ci 严格按 lock 文件安装）
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 代码检查（ESLint，不加 --fix，只校验不改动）
+      - name: Lint (ESLint)
+        run: npm run lint:check
+
+      # 5. 单元测试（Vitest + happy-dom）
+      - name: Unit tests (Vitest)
+        run: npm run test
+
+      # 6. 构建打包（Vite 生产构建）
+      - name: Build (Vite)
+        run: npm run build
+
+      # 7. 上传构建产物 dist/
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: Hbsz_IDC_System/dist
+          retention-days: 7
