@@ -1,0 +1,111 @@
+# ========================================
+# 数据中心综合布线项目管理系统 - 主配置文件
+# ========================================
+# 注意：profiles.active 必须通过环境变量 SPRING_PROFILES_ACTIVE 指定
+# 不再提供默认值，避免开发配置误用于生产环境
+spring:
+  application:
+    name: hbsz-idc-system-end
+  # 文件上传配置（与 FileStorageService 的 100MB 限制保持一致）
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+      file-size-threshold: 0
+  # Tomcat 相关配置
+  tomcat:
+    max-swallow-size: 100MB
+  # ============================================================================
+  # Flyway 数据库迁移配置（P0-5.1）
+  # ============================================================================
+  # 设计说明：
+  #   - baseline-on-migrate=true：允许在已有数据的数据库上启用 Flyway
+  #     首次启动时若 flyway_schema_history 表不存在，Flyway 会自动创建 baseline 记录
+  #   - baseline-version=0：将当前数据库状态标记为版本 0
+  #     所有 V202607xx 之后未执行的迁移脚本会被应用
+  #   - validate-on-migrate=false：跳过校验已有脚本的 checksum
+  #     历史脚本可能在引入 Flyway 前被手动执行过，checksum 校验会失败
+  #     迁移脚本本身均做了幂等处理（information_schema 存在性检查），重复执行安全
+  #   - locations=classpath:db/migration：迁移脚本目录
+  # ============================================================================
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: false
+    out-of-order: false
+    table: flyway_schema_history
+    encoding: UTF-8
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.example.hbsz_idc_system_end.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Knife4j API 文档配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-version: true
+    enable-swagger-models: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: default
+      paths-to-match: /**
+      packages-to-scan: com.example.hbsz_idc_system_end.controller
+
+# 服务器配置
+server:
+  servlet:
+    context-path: /api
+  # 原生策略：启用 Tomcat RemoteIpValve 处理 X-Forwarded-*（配合受信代理白名单
+  # server.tomcat.remoteip.internal-proxies，见 application-prod.yml）。
+  # 安全说明：不能使用 framework 策略——Spring ForwardedHeaderFilter 不区分代理是否可信，
+  # 会直接把 XFF 最左（客户端可任意伪造）写入 remoteAddr，导致限流/审计的 IP 全部可伪造。
+  # RemoteIpValve 按"从右向左跳过可信跳转"计算真实 IP，且 X-Forwarded-Proto 仍可正常生效。
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      # 显式声明处理的请求头，不依赖 Spring Boot 装配默认值
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+      # 默认仅信任回环（开发环境 vite 代理直连 127.0.0.1）；生产网段在 application-prod.yml 覆盖
+      internal-proxies: '127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1'
+
+# 接口版本控制配置
+# 当前版本：v1，所有接口默认前缀 /v1
+# 新版本接口使用 /v2 前缀，老版本接口保留兼容期后下线
+api:
+  version:
+    current: v1
+    supported: v1
+    # 是否在响应头中返回API版本
+    header-enabled: true
+
+# 安全相关配置
+hbsz:
+  # JWT 签发方与受众配置（安全修复 #40：解析时校验 issuer/audience 防止跨服务 token 误用）
+  jwt:
+    issuer: ${JWT_ISSUER:hbsz-idc}
+    audience: ${JWT_AUDIENCE:hbsz-client}

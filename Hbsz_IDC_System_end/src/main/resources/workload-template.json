@@ -1,0 +1,850 @@
+[
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "材料接收",
+    "ratedWorkload": 4000.0,
+    "unit": "米",
+    "remark": null,
+    "sortOrder": 1
+  },
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "光缆上架（30-60米）",
+    "ratedWorkload": 3.0,
+    "unit": "条",
+    "remark": "跨机房",
+    "sortOrder": 2
+  },
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "光缆上架（60-90米）",
+    "ratedWorkload": 1.0,
+    "unit": "条",
+    "remark": "跨机房",
+    "sortOrder": 3
+  },
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "光缆上架（90以上）",
+    "ratedWorkload": 0.5,
+    "unit": "条",
+    "remark": "跨楼层",
+    "sortOrder": 4
+  },
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "光缆绑扎（含分支）",
+    "ratedWorkload": 400.0,
+    "unit": "米",
+    "remark": "2条或四条一捆",
+    "sortOrder": 5
+  },
+  {
+    "category": "24/48/96芯光缆",
+    "workScope": "一致性测试（不含数据）",
+    "ratedWorkload": 960.0,
+    "unit": "芯",
+    "remark": null,
+    "sortOrder": 6
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 7
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 150.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 8
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "光缆上架（30-60米）",
+    "ratedWorkload": 60.0,
+    "unit": "条",
+    "remark": "跨机房",
+    "sortOrder": 9
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "光缆上架（60-90米）",
+    "ratedWorkload": 15.0,
+    "unit": "条",
+    "remark": "跨机房",
+    "sortOrder": 10
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "光缆上架（90以上）",
+    "ratedWorkload": 4.0,
+    "unit": "条",
+    "remark": "跨楼层",
+    "sortOrder": 11
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "光缆分线",
+    "ratedWorkload": 50.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 12
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "光缆绑扎（含分支）",
+    "ratedWorkload": 30.0,
+    "unit": "米",
+    "remark": "40根一把线*每根平均长度",
+    "sortOrder": 13
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "核心侧端接（含绑扎）",
+    "ratedWorkload": 2.0,
+    "unit": "台",
+    "remark": "1台约120条",
+    "sortOrder": 14
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "基础交换机端端接（含绑扎）",
+    "ratedWorkload": 50.0,
+    "unit": "台",
+    "remark": "1台4条",
+    "sortOrder": 15
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "余线收整",
+    "ratedWorkload": 20.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 16
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1000.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 17
+  },
+  {
+    "category": "12芯MPO-MPO光缆（4.5）",
+    "workScope": "一致性测试（含整改、含数据）",
+    "ratedWorkload": 100.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 18
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 19
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 300.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 20
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "光缆上架（30-60米）",
+    "ratedWorkload": 6.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 21
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "光缆上架（61-90米）",
+    "ratedWorkload": 4.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 22
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "光缆上架（91以上）",
+    "ratedWorkload": 2.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 23
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "盒子安装",
+    "ratedWorkload": 1.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 24
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "光缆绑扎（含分支）",
+    "ratedWorkload": 1000.0,
+    "unit": "米",
+    "remark": null,
+    "sortOrder": 25
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "核心侧端接（含绑扎）",
+    "ratedWorkload": 1.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 26
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "基础交换机端端接（含绑扎）",
+    "ratedWorkload": 1.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 27
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "余线收整",
+    "ratedWorkload": 10.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 28
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 29
+  },
+  {
+    "category": "72芯MPO-MPO预端接光缆",
+    "workScope": "一致性测试（含整改、含数据）",
+    "ratedWorkload": 1.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 30
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 31
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 300.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 32
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "跳线上架（15米以下）",
+    "ratedWorkload": 200.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 33
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "跳线上架（15-30米）",
+    "ratedWorkload": 25.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 34
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "跳线分线",
+    "ratedWorkload": 50.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 35
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "光跳绑扎",
+    "ratedWorkload": 40.0,
+    "unit": "米",
+    "remark": "40根一把线",
+    "sortOrder": 36
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "基础交换机端端接（含绑扎）",
+    "ratedWorkload": 10.0,
+    "unit": "台",
+    "remark": "1台24条",
+    "sortOrder": 37
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "核心侧端接（含绑扎）",
+    "ratedWorkload": 2.0,
+    "unit": "台",
+    "remark": "1台约120条",
+    "sortOrder": 38
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "余线收整",
+    "ratedWorkload": 20.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 39
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1000.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 40
+  },
+  {
+    "category": "12芯MPO-MPO光跳（3.0、2.0）",
+    "workScope": "一致性测试（含整改、含数据）",
+    "ratedWorkload": 300.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 41
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 42
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 200.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 43
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "光纤上架（15米以下）",
+    "ratedWorkload": 40.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 44
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "光纤上架（15-30米）",
+    "ratedWorkload": 25.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 45
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "绑扎",
+    "ratedWorkload": 40.0,
+    "unit": "米",
+    "remark": null,
+    "sortOrder": 46
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "基础交换机端端接（含绑扎）",
+    "ratedWorkload": 15.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 47
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "核心侧端接（含绑扎）",
+    "ratedWorkload": 4.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 48
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "余线收整",
+    "ratedWorkload": 20.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 49
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1000.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 50
+  },
+  {
+    "category": "2芯光纤（LC、SC、FC）",
+    "workScope": "一致性测试（含整改、不含数据）",
+    "ratedWorkload": 300.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 51
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 52
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 200.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 53
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "垂直绑扎（托盘端）",
+    "ratedWorkload": 6.0,
+    "unit": "柜",
+    "remark": "单机柜48根AOC",
+    "sortOrder": 54
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "水平绑扎（桥架端）",
+    "ratedWorkload": 5.0,
+    "unit": "组",
+    "remark": "两台交换机为一组",
+    "sortOrder": 55
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "端接（单台48口交换机）",
+    "ratedWorkload": 8.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 56
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "余线收整（单台48口交换机）",
+    "ratedWorkload": 10.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 57
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1000.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 58
+  },
+  {
+    "category": "普通常规AOC/ACC",
+    "workScope": "点亮（不含数据）",
+    "ratedWorkload": 300.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 59
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 60
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "拆包、粘贴临时标签",
+    "ratedWorkload": 100.0,
+    "unit": "条",
+    "remark": "400张标签",
+    "sortOrder": 61
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "展现/盘线",
+    "ratedWorkload": 80.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 62
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "上线",
+    "ratedWorkload": 10.0,
+    "unit": "柜",
+    "remark": "把线放置在桥架与机柜里",
+    "sortOrder": 63
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "垂直绑扎（托盘端）",
+    "ratedWorkload": 6.0,
+    "unit": "柜",
+    "remark": "GPU机柜3/4台模型",
+    "sortOrder": 64
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "端接（单台128口交换机，端接64口）",
+    "ratedWorkload": 8.0,
+    "unit": "台",
+    "remark": "前端绑扎",
+    "sortOrder": 65
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "余线收整（单台128口交换机，余线收64根）",
+    "ratedWorkload": 8.0,
+    "unit": "台",
+    "remark": "后端收到桥架里",
+    "sortOrder": 66
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 800.0,
+    "unit": "张",
+    "remark": "整齐",
+    "sortOrder": 67
+  },
+  {
+    "category": "20M/30M 一分二AOC",
+    "workScope": "小程序测试",
+    "ratedWorkload": 16.0,
+    "unit": "柜",
+    "remark": null,
+    "sortOrder": 68
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 60.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 69
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "拆包、写号",
+    "ratedWorkload": 600.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 70
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "垂直绑扎（托盘端）",
+    "ratedWorkload": 12.0,
+    "unit": "柜",
+    "remark": null,
+    "sortOrder": 71
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "水平汇聚及绑扎（桥架端）",
+    "ratedWorkload": 6.0,
+    "unit": "组",
+    "remark": "单台交换机48口为一组",
+    "sortOrder": 72
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "端接（单台48口交换机）",
+    "ratedWorkload": 12.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 73
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "端接（双层48口交换机（上层））",
+    "ratedWorkload": 10.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 74
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "端接（双层48口交换机（下层））",
+    "ratedWorkload": 12.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 75
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "余线收整（单台48口交换机）",
+    "ratedWorkload": 12.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 76
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "余线收整（双层48口交换机（上层））",
+    "ratedWorkload": 8.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 77
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "余线收整（双层48口交换机（下层））",
+    "ratedWorkload": 12.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 78
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "标签粘贴（交换机端）",
+    "ratedWorkload": 1500.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 79
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "标签粘贴（托盘端）",
+    "ratedWorkload": 1200.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 80
+  },
+  {
+    "category": "五类、六类及以上成品网线",
+    "workScope": "点亮（不含数据）",
+    "ratedWorkload": 20.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 81
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 82
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "上架、写号",
+    "ratedWorkload": 100.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 83
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "水晶头、模块制作",
+    "ratedWorkload": 120.0,
+    "unit": "个",
+    "remark": "正确率达到95%",
+    "sortOrder": 84
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "水平绑扎（桥架端）",
+    "ratedWorkload": 1500.0,
+    "unit": "米",
+    "remark": null,
+    "sortOrder": 85
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "端接",
+    "ratedWorkload": 15.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 86
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "余线收整",
+    "ratedWorkload": 12.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 87
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1000.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 88
+  },
+  {
+    "category": "非成品网线",
+    "workScope": "点亮（不含数据）",
+    "ratedWorkload": 300.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 89
+  },
+  {
+    "category": "电源线",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 90
+  },
+  {
+    "category": "电源线",
+    "workScope": "拆包",
+    "ratedWorkload": 800.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 91
+  },
+  {
+    "category": "电源线",
+    "workScope": "端接",
+    "ratedWorkload": 500.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 92
+  },
+  {
+    "category": "电源线",
+    "workScope": "绑扎",
+    "ratedWorkload": 20.0,
+    "unit": "柜",
+    "remark": "每柜20根",
+    "sortOrder": 93
+  },
+  {
+    "category": "电源线",
+    "workScope": "测试（不含数据）",
+    "ratedWorkload": 800.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 94
+  },
+  {
+    "category": "电源线",
+    "workScope": "标签粘贴",
+    "ratedWorkload": 1500.0,
+    "unit": "张",
+    "remark": null,
+    "sortOrder": 95
+  },
+  {
+    "category": "理线器、ODF",
+    "workScope": "材料接收、数量清点、搬运",
+    "ratedWorkload": 100.0,
+    "unit": "箱",
+    "remark": null,
+    "sortOrder": 96
+  },
+  {
+    "category": "理线器、ODF",
+    "workScope": "拆包",
+    "ratedWorkload": 260.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 97
+  },
+  {
+    "category": "理线器、ODF",
+    "workScope": "安装",
+    "ratedWorkload": 260.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 98
+  },
+  {
+    "category": "层板",
+    "workScope": "拆除/安装",
+    "ratedWorkload": 230.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 99
+  },
+  {
+    "category": "层板",
+    "workScope": "搬运",
+    "ratedWorkload": 1000.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 100
+  },
+  {
+    "category": "挡风板",
+    "workScope": "拆除/安装",
+    "ratedWorkload": 4000.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 101
+  },
+  {
+    "category": "挡风板",
+    "workScope": "搬运",
+    "ratedWorkload": 10000.0,
+    "unit": "条",
+    "remark": null,
+    "sortOrder": 102
+  },
+  {
+    "category": "1U交换机上架",
+    "workScope": "搬运",
+    "ratedWorkload": 24.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 103
+  },
+  {
+    "category": "1U交换机上架",
+    "workScope": "拆除/安装",
+    "ratedWorkload": 24.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 104
+  },
+  {
+    "category": "4U交换机上架",
+    "workScope": "搬运",
+    "ratedWorkload": 6.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 105
+  },
+  {
+    "category": "4U交换机上架",
+    "workScope": "拆除/安装",
+    "ratedWorkload": 6.0,
+    "unit": "台",
+    "remark": null,
+    "sortOrder": 106
+  }
+]

@@ -1,0 +1,14 @@
+# 注意：target/ 不能整目录排除——Dockerfile 需要 COPY target/Hbsz_IDC_System_end.jar（B2 修复）
+# 排除 target 下除最终 JAR 外的所有构建杂物（classes/test-classes/generated-sources 等）
+target/*
+!target/Hbsz_IDC_System_end.jar
+.git/
+.idea/
+*.iml
+*.log
+logs/
+uploads/
+console.text
+error.text
+PasswordGen.java
+.gitignore

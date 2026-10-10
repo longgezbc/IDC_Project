@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizDocumentMapper">
+
+    <!-- 文档VO结果映射 -->
+    <resultMap id="DocumentVOMap" type="com.example.hbsz_idc_system_end.dto.DocumentVO">
+        <id property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="name" column="name"/>
+        <result property="category" column="category"/>
+        <result property="version" column="current_version"/>
+        <result property="status" column="status"/>
+        <result property="reviewerName" column="reviewer_name"/>
+        <result property="reviewTime" column="review_time"/>
+        <result property="reviewRemark" column="review_remark"/>
+        <result property="size" column="file_size"/>
+        <result property="fileType" column="file_format"/>
+        <result property="uploader" column="uploader_name"/>
+        <result property="uploadDate" column="upload_date"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <!-- 分页查询文档列表：主表 biz_document LEFT JOIN biz_project 回填项目名称，
+         通过 <where>/<if> 拼装关键字、分类、项目、状态、文件类型、上传人、上传时间区间等动态条件，按上传时间倒序分页。
+         数据隔离：visibleProjectIds 由服务层注入（admin/PM 为 null 不过滤；工程师/普通用户为可见项目ID列表，
+         空列表表示无任何可见项目，通过 AND 1 = 0 返回空结果）。
+         性能考虑：建议 project_id 及排序列 upload_date 建索引；关键字/上传人前后模糊匹配走不了索引，属可接受的范围过滤。 -->
+    <select id="selectDocumentPage" resultMap="DocumentVOMap">
+        SELECT d.id, d.project_id, p.name AS project_name, d.name, d.category,
+               d.current_version, d.status, d.file_size, d.file_format,
+               d.uploader_name, DATE_FORMAT(d.upload_date, '%Y-%m-%d') AS upload_date,
+               d.description,
+               su.name AS reviewer_name,
+               DATE_FORMAT(d.review_time, '%Y-%m-%d %H:%i') AS review_time,
+               d.review_remark
+        FROM biz_document d
+        LEFT JOIN biz_project p ON d.project_id = p.id
+        LEFT JOIN sys_user su ON d.reviewer_id = su.id
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (d.name LIKE CONCAT('%', #{query.keyword}, '%')
+                  OR d.description LIKE CONCAT('%', #{query.keyword}, '%'))
+            </if>
+            <if test="query.category != null and query.category != ''">
+                AND d.category = #{query.category}
+            </if>
+            <if test="query.projectId != null">
+                AND d.project_id = #{query.projectId}
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND d.status = #{query.status}
+            </if>
+            <if test="query.fileType != null and query.fileType != ''">
+                AND d.file_format = #{query.fileType}
+            </if>
+            <if test="query.uploader != null and query.uploader != ''">
+                AND d.uploader_name LIKE CONCAT('%', #{query.uploader}, '%')
+            </if>
+            <if test="query.uploadDateBegin != null and query.uploadDateBegin != ''">
+                AND d.upload_date &gt;= #{query.uploadDateBegin}
+            </if>
+            <if test="query.uploadDateEnd != null and query.uploadDateEnd != ''">
+                AND d.upload_date &lt;= #{query.uploadDateEnd}
+            </if>
+            <if test="query.visibleProjectIds != null and query.visibleProjectIds.size() == 0">
+                AND 1 = 0
+            </if>
+            <if test="query.visibleProjectIds != null and query.visibleProjectIds.size() > 0">
+                AND d.project_id IN
+                <foreach collection="query.visibleProjectIds" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY d.upload_date DESC, d.id DESC
+    </select>
+
+    <!-- 查询文档详情 -->
+    <select id="selectDocumentDetailById" resultMap="DocumentVOMap">
+        SELECT d.id, d.project_id, p.name AS project_name, d.name, d.category,
+               d.current_version, d.status, d.file_size, d.file_format,
+               d.uploader_name, DATE_FORMAT(d.upload_date, '%Y-%m-%d') AS upload_date,
+               d.description,
+               su.name AS reviewer_name,
+               DATE_FORMAT(d.review_time, '%Y-%m-%d %H:%i') AS review_time,
+               d.review_remark
+        FROM biz_document d
+        LEFT JOIN biz_project p ON d.project_id = p.id
+        LEFT JOIN sys_user su ON d.reviewer_id = su.id
+        WHERE d.id = #{id}
+    </select>
+
+    <!-- 按分类统计文档数量 -->
+    <select id="countByCategory" resultType="java.util.Map">
+        SELECT category, COUNT(*) AS count
+        FROM biz_document
+        WHERE category IS NOT NULL AND category != ''
+        GROUP BY category
+    </select>
+
+</mapper>

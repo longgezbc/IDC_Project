@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizProjectTransferLogMapper">
+
+    <!-- 转移日志分页查询：已包含项目名/工程师姓名等冗余字段，直接返回 VO -->
+    <select id="selectLogPage" resultType="com.example.hbsz_idc_system_end.dto.TransferLogVO">
+        SELECT
+            l.id,
+            l.project_id            AS projectId,
+            l.project_name          AS projectName,
+            l.action_type           AS actionType,
+            l.from_engineer_id      AS fromEngineerId,
+            l.from_engineer_name    AS fromEngineerName,
+            l.to_engineer_id        AS toEngineerId,
+            l.to_engineer_name      AS toEngineerName,
+            l.operated_by           AS operatedBy,
+            l.operator_name         AS operatorName,
+            l.operated_at           AS operatedAt,
+            l.remark
+        FROM biz_project_transfer_log l
+        <where>
+            <if test="query.projectId != null">
+                AND l.project_id = #{query.projectId}
+            </if>
+            <if test="query.operatedBy != null">
+                AND l.operated_by = #{query.operatedBy}
+            </if>
+            <if test="query.actionType != null and query.actionType != ''">
+                AND l.action_type = #{query.actionType}
+            </if>
+            <if test="query.dateBegin != null and query.dateBegin != ''">
+                AND l.operated_at &gt;= CONCAT(#{query.dateBegin}, ' 00:00:00')
+            </if>
+            <if test="query.dateEnd != null and query.dateEnd != ''">
+                AND l.operated_at &lt;= CONCAT(#{query.dateEnd}, ' 23:59:59')
+            </if>
+        </where>
+        ORDER BY l.operated_at DESC, l.id DESC
+    </select>
+
+</mapper>

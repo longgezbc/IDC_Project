@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 网络安全策略：默认禁止明文流量，仅放行当前后端服务器的 HTTP 调试地址。
+     正式上线前应为服务器配置 HTTPS 证书，并把 API_BASE_URL 改为 https 后删除 domain-config 节点。 -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+
+    <!-- 临时放行：后端暂未部署 HTTPS，仅允许该 IP 走明文 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">106.53.54.22</domain>
+    </domain-config>
+</network-security-config>

@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机房布局 · 网格与桥架交互原型</title>
+<style>
+:root {
+  --primary: #1677e6;
+  --primary-hover: #4096ff;
+  --primary-active: #0958d9;
+  --primary-bg: #e6f4ff;
+  --success: #52c41a;
+  --success-deep: #389e0d;
+  --success-bg: #f6ffed;
+  --warning: #fa8c16;
+  --warning-deep: #d46b08;
+  --warning-bg: #fff7e6;
+  --error: #ff4d4f;
+  --error-bg: #fff1f0;
+  --text: rgba(0, 0, 0, 0.88);
+  --text-secondary: rgba(0, 0, 0, 0.65);
+  --text-tertiary: rgba(0, 0, 0, 0.45);
+  --border: #d9d9d9;
+  --split: #f0f0f0;
+  --bg-layout: #f5f5f5;
+  --bg-canvas: #fafafa;
+  --radius: 6px;
+  --shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg-layout);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+button { font-family: inherit; }
+kbd {
+  display: inline-block;
+  min-width: 18px;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ── 顶栏 ─────────────────────────── */
+.topbar {
+  height: 48px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--split);
+}
+.topbar .brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; white-space: nowrap; }
+.topbar .brand svg { color: var(--primary); }
+.room-chip {
+  font-size: 12px;
+  color: var(--primary);
+  background: var(--primary-bg);
+  border: 1px solid #91caff;
+  border-radius: 4px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+.tb-sep { width: 1px; height: 20px; background: var(--split); flex: none; }
+.tb-spacer { flex: 1; }
+
+.seg { display: flex; gap: 4px; }
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.mode-btn:hover { color: var(--primary); border-color: var(--primary-hover); }
+.mode-btn.active { color: var(--primary); border-color: var(--primary); background: var(--primary-bg); }
+.mode-btn kbd { margin-left: 2px; }
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+}
+.tool-btn:hover:not(:disabled) { color: var(--primary); border-color: var(--primary-hover); }
+.tool-btn:disabled { color: rgba(0,0,0,0.25); background: #f5f5f5; cursor: not-allowed; }
+.zoom-label { min-width: 46px; text-align: center; font-size: 12px; color: var(--text-secondary); }
+.btn-primary {
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-primary:disabled { background: #91caff; border-color: #91caff; cursor: not-allowed; }
+
+/* ── 主体三栏 ─────────────────────── */
+.main { flex: 1; display: flex; min-height: 0; }
+
+.palette {
+  width: 216px;
+  flex: none;
+  background: #fff;
+  border-right: 1px solid var(--split);
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.panel-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: grab;
+  user-select: none;
+  transition: all .15s;
+  background: #fff;
+}
+.palette-item:hover { border-color: var(--primary-hover); box-shadow: 0 2px 6px rgba(22,119,230,.1); }
+.palette-item:active { cursor: grabbing; }
+.palette-item .thumb {
+  width: 40px; height: 24px; flex: none;
+  border-radius: 3px;
+}
+.palette-item .pi-name { font-size: 13px; color: var(--text); }
+.palette-item .pi-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.palette .drag-hint { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; }
+.shortcut-card { border-top: 1px solid var(--split); padding-top: 10px; }
+.sc-row { display: flex; align-items: center; justify-content: space-between; padding: 3px 0; font-size: 12px; color: var(--text-secondary); }
+
+/* ── 画布区 ───────────────────────── */
+.canvas-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.canvas-scroll {
+  flex: 1;
+  overflow: auto;
+  background: var(--bg-canvas);
+  position: relative;
+}
+.canvas-inner {
+  display: inline-grid;
+  grid-template-columns: 22px auto;
+  grid-template-rows: 22px auto;
+  margin: 10px 20px 20px 10px;
+}
+.ruler-corner { grid-area: 1 / 1; background: #fff; border-right: 1px solid var(--split); border-bottom: 1px solid var(--split); z-index: 6; position: sticky; top: 0; left: 0; }
+.ruler-top { grid-area: 1 / 2; position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--split); }
+.ruler-left { grid-area: 2 / 1; position: sticky; left: 0; z-index: 5; background: #fff; border-right: 1px solid var(--split); }
+.svg-box { grid-area: 2 / 2; touch-action: none; user-select: none; position: relative; }
+.svg-box svg { display: block; }
+
+/* ── 右侧属性面板 ─────────────────── */
+.inspector {
+  width: 300px;
+  flex: none;
+  background: #fff;
+  border-left: 1px solid var(--split);
+  overflow-y: auto;
+  padding: 12px;
+}
+.insp-card { border: 1px solid var(--split); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; }
+.insp-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.kind-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+}
+.kv { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px dashed var(--split); gap: 12px; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: var(--text-secondary); flex: none; }
+.kv .v { color: var(--text); text-align: right; }
+.kv .v.hl { color: var(--primary); font-weight: 600; }
+.form-item { margin-bottom: 10px; }
+.form-item label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+.form-item .fi-ctrl { display: flex; align-items: center; gap: 6px; }
+.form-item input[type="text"], .form-item input[type="number"], .form-item select {
+  flex: 1; min-width: 0; height: 28px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 4px;
+  font-size: 13px; font-family: inherit; color: var(--text);
+  outline: none; transition: border-color .15s;
+}
+.form-item input:focus, .form-item select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,230,.1); }
+.form-item .unit { font-size: 12px; color: var(--text-tertiary); flex: none; }
+.btn-danger {
+  width: 100%; height: 30px;
+  border: 1px solid var(--error); border-radius: 4px;
+  background: #fff; color: var(--error);
+  font-size: 13px; cursor: pointer; transition: all .15s;
+}
+.btn-danger:hover { background: var(--error-bg); }
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; padding: 1px 8px; border-radius: 4px;
+}
+.tag-ok { background: var(--success-bg); border: 1px solid #b7eb8f; color: var(--success-deep); }
+.tag-warn { background: var(--warning-bg); border: 1px solid #ffd591; color: var(--warning-deep); }
+.insp-note { font-size: 12px; color: var(--text-tertiary); line-height: 1.7; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--split); }
+.endpoint-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+.endpoint-row .ep-label { color: var(--text-secondary); }
+.endpoint-row .ep-value { font-weight: 500; }
+
+/* ── 状态栏 ───────────────────────── */
+.statusbar {
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: #fff;
+  border-top: 1px solid var(--split);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.statusbar .sb-zone { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.statusbar .sb-spacer { flex: 1; }
+.mode-chip { padding: 0 8px; border-radius: 4px; font-weight: 500; }
+.mode-chip.m-select { background: var(--primary-bg); color: var(--primary); }
+.mode-chip.m-tray { background: var(--warning-bg); color: var(--warning-deep); }
+.mode-chip.m-wall { background: #f0f0f0; color: var(--text-secondary); }
+.mode-chip.m-erase { background: var(--error-bg); color: var(--error); }
+
+/* ── 网格设置弹窗 ─────────────────── */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 100;
+}
+.modal-mask.open { display: flex; }
+.modal {
+  width: 470px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 20px 24px 16px;
+}
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.modal .modal-desc { font-size: 12px; color: var(--text-tertiary); margin-bottom: 16px; }
+.grid-form-row { display: flex; gap: 16px; margin-bottom: 14px; }
+.grid-field { flex: 1; min-width: 0; }
+.grid-field > label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+.stepper { display: flex; height: 30px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.stepper button {
+  width: 30px; flex: none; border: none; background: #fff;
+  font-size: 15px; color: var(--text-secondary); cursor: pointer;
+}
+.stepper button:hover:not(:disabled) { color: var(--primary); background: var(--primary-bg); }
+.stepper button:disabled { color: rgba(0,0,0,0.25); cursor: not-allowed; }
+.stepper input {
+  flex: 1; min-width: 0; text-align: center;
+  border: none; border-left: 1px solid var(--split); border-right: 1px solid var(--split);
+  font-size: 13px; font-family: inherit; color: var(--text); outline: none;
+}
+.stepper input.invalid { color: var(--error); font-weight: 600; }
+.field-hint { font-size: 11px; margin-top: 5px; line-height: 1.5; }
+.field-hint.ok { color: var(--text-tertiary); }
+.field-hint.err { color: var(--error); }
+.cell-size-group { display: flex; gap: 8px; }
+.cs-option {
+  flex: 1; border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; cursor: pointer; transition: all .15s; background: #fff;
+}
+.cs-option:hover { border-color: var(--primary-hover); }
+.cs-option.active { border-color: var(--primary); background: var(--primary-bg); }
+.cs-option .cs-t { font-size: 13px; font-weight: 500; color: var(--text); }
+.cs-option.active .cs-t { color: var(--primary); }
+.cs-option .cs-d { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.btn-text {
+  height: 30px; padding: 0 14px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: #fff; color: var(--text-secondary); font-size: 13px; cursor: pointer;
+}
+.btn-text:hover { color: var(--primary); border-color: var(--primary-hover); }
+
+/* ── Toast ────────────────────────── */
+.toasts { position: fixed; top: 60px; right: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 6px; background: #fff;
+  box-shadow: var(--shadow); border: 1px solid var(--split);
+  font-size: 13px; max-width: 380px;
+  animation: toast-in .2s ease;
+}
+.toast .t-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.toast.info .t-dot { background: var(--primary); }
+.toast.success .t-dot { background: var(--success); }
+.toast.error .t-dot { background: var(--error); }
+@keyframes toast-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+    机房布局 · 交互原型
+  </div>
+  <span class="room-chip">示例机房 A</span>
+  <div class="tb-sep"></div>
+  <div class="seg" role="toolbar" aria-label="编辑模式">
+    <button class="mode-btn active" id="mode-select" title="选择 / 移动 / 拉伸（V）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l7 17 2.5-7.5L21 10z"/></svg>
+      选择 <kbd>V</kbd>
+    </button>
+    <button class="mode-btn" id="mode-tray" title="桥架画笔：按下拖动画直线段（T）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+      桥架画笔 <kbd>T</kbd>
+    </button>
+    <button class="mode-btn" id="mode-wall" title="墙体画笔：按下拖动画墙体段（W）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="20" height="7" rx="1"/><path d="M8 9v7M16 9v7M2 12.5h6M16 12.5h6"/></svg>
+      墙体画笔 <kbd>W</kbd>
+    </button>
+    <button class="mode-btn" id="mode-erase" title="点击删除元素（E）">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H8L3 15a2 2 0 010-2.8L12.2 3a2 2 0 012.8 0l6 6a2 2 0 010 2.8L13 20"/><path d="M8.5 8.5l7 7"/></svg>
+      擦除 <kbd>E</kbd>
+    </button>
+  </div>
+  <div class="tb-spacer"></div>
+  <button class="mode-btn" id="btn-grid" title="网格尺寸 / 单元格规格设置">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+    网格设置
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tool-btn" id="btn-undo" title="撤销 (Ctrl+Z)" aria-label="撤销">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 015 5v1"/></svg>
+  </button>
+  <button class="tool-btn" id="btn-redo" title="重做 (Ctrl+Y)" aria-label="重做">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 00-5 5v1"/></svg>
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tool-btn" id="btn-zoom-out" title="缩小" aria-label="缩小">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg>
+  </button>
+  <span class="zoom-label" id="zoom-label">100%</span>
+  <button class="tool-btn" id="btn-zoom-in" title="放大" aria-label="放大">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M11 8v6M21 21l-4.3-4.3"/></svg>
+  </button>
+  <button class="mode-btn" id="btn-fit" title="缩放至画布适应视口">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>
+    适应
+  </button>
+  <div class="tb-sep"></div>
+  <button class="btn-primary" id="btn-save">保存布局</button>
+</header>
+
+<div class="main">
+  <aside class="palette">
+    <div>
+      <div class="panel-title">元素库</div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="palette-list"></div>
+      <p class="drag-hint" style="margin-top:10px">拖拽元素到画布任意位置放置，自动吸附格线；与已有元素重叠处会拒绝放置。</p>
+    </div>
+    <div class="shortcut-card">
+      <div class="panel-title">快捷键</div>
+      <div class="sc-row"><span>选择模式</span><kbd>V</kbd></div>
+      <div class="sc-row"><span>桥架画笔</span><kbd>T</kbd></div>
+      <div class="sc-row"><span>墙体画笔</span><kbd>W</kbd></div>
+      <div class="sc-row"><span>擦除模式</span><kbd>E</kbd></div>
+      <div class="sc-row"><span>退出画笔 / 取消选择</span><kbd>Esc</kbd></div>
+      <div class="sc-row"><span>删除选中元素</span><kbd>Del</kbd></div>
+      <div class="sc-row"><span>撤销 / 重做</span><span><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></span></div>
+    </div>
+  </aside>
+
+  <div class="canvas-wrap">
+    <div class="canvas-scroll" id="canvas-scroll">
+      <div class="canvas-inner">
+        <div class="ruler-corner"></div>
+        <div class="ruler-top"><canvas id="ruler-top-canvas"></canvas></div>
+        <div class="ruler-left"><canvas id="ruler-left-canvas"></canvas></div>
+        <div class="svg-box" id="svg-box">
+          <svg id="canvas-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="inspector" id="inspector"></aside>
+</div>
+
+<footer class="statusbar">
+  <div class="sb-zone"><span class="mode-chip m-select" id="sb-mode">选择模式</span></div>
+  <div class="sb-zone" id="sb-pos">—</div>
+  <div class="sb-spacer"></div>
+  <div class="sb-zone" id="sb-count">—</div>
+</footer>
+
+<div class="modal-mask" id="grid-modal">
+  <div class="modal" role="dialog" aria-label="网格设置">
+    <h3>网格设置</h3>
+    <p class="modal-desc">调整网格规模与单元格物理规格。缩小网格受元素占用边界保护，放大随时可用。</p>
+    <div class="grid-form-row">
+      <div class="grid-field">
+        <label>列数（左右方向）</label>
+        <div class="stepper">
+          <button type="button" id="cols-minus" aria-label="减少列数">−</button>
+          <input type="number" id="cols-input" min="4" max="60">
+          <button type="button" id="cols-plus" aria-label="增加列数">+</button>
+        </div>
+        <div class="field-hint ok" id="cols-hint"></div>
+      </div>
+      <div class="grid-field">
+        <label>行数（上下方向）</label>
+        <div class="stepper">
+          <button type="button" id="rows-minus" aria-label="减少行数">−</button>
+          <input type="number" id="rows-input" min="4" max="60">
+          <button type="button" id="rows-plus" aria-label="增加行数">+</button>
+        </div>
+        <div class="field-hint ok" id="rows-hint"></div>
+      </div>
+    </div>
+    <div class="grid-field">
+      <label>单元格规格</label>
+      <div class="cell-size-group" id="cell-size-group">
+        <div class="cs-option active" data-mm="600">
+          <div class="cs-t">600 × 600 mm</div>
+          <div class="cs-d">标准规格 · 机柜按 2 格宽布置</div>
+        </div>
+        <div class="cs-option" data-mm="300">
+          <div class="cs-t">300 × 300 mm</div>
+          <div class="cs-d">精细规格 · 适合作业通道校核</div>
+        </div>
+      </div>
+      <div class="field-hint ok">切换规格仅影响物理标尺与线缆长度换算，不改变网格格数与元素位置。</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-text" id="grid-cancel">取消</button>
+      <button class="btn-primary" id="grid-apply">应用</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var C_BASE = 30;
+  var RACK_TOP_MM = 2000;
+  var TERM_PER_END_MM = 500;
+  var SLACK_PCT = 15;
+  var KIND = {
+    rack:   { name: '机柜', fill: '#1677ff', stroke: '#0958d9', gw: 2, gh: 1 },
+    tray:   { name: '桥架', fill: '#fa8c16', stroke: '#d46b08', gw: 4, gh: 1 },
+    wall:   { name: '墙体', fill: '#6b7280', stroke: '#4b5563', gw: 4, gh: 1 },
+    pillar: { name: '立柱', fill: '#374151', stroke: '#1f2937', gw: 1, gh: 1 }
+  };
+  var TRAY_THICK = { 200: 9, 300: 13, 400: 17, 500: 21 };
+
+  var state = {
+    cols: 16, rows: 12, cellSizeMm: 600,
+    zoom: 1,
+    mode: 'select',
+    objects: [
+      { id: 'r1', kind: 'rack', gx: 2, gy: 2, gw: 2, gh: 1, label: 'A-01' },
+      { id: 'r2', kind: 'rack', gx: 10, gy: 2, gw: 2, gh: 1, label: 'B-01' },
+      { id: 't1', kind: 'tray', gx: 3, gy: 4, gw: 9, gh: 1, widthMm: 300, heightMm: 2400 },
+      { id: 'w1', kind: 'wall', gx: 0, gy: 8, gw: 6, gh: 1 },
+      { id: 'p1', kind: 'pillar', gx: 7, gy: 6, gw: 1, gh: 1 }
+    ],
+    selection: null,
+    hoverCell: null,
+    pen: null,
+    guides: null,
+    dropCell: null,
+    dropValid: false
+  };
+  var undoStack = [];
+  var redoStack = [];
+  var idSeq = 100;
+  var drag = null;
+  var currentDragKind = null;
+
+  var svg = document.getElementById('canvas-svg');
+  var svgBox = document.getElementById('svg-box');
+  var scroll = document.getElementById('canvas-scroll');
+
+  function cellPx() { return C_BASE * state.zoom; }
+  function byId(id) { for (var i = 0; i < state.objects.length; i++) if (state.objects[i].id === id) return state.objects[i]; return null; }
+  function countKind(k) { return state.objects.filter(function (o) { return o.kind === k; }).length; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  function toast(msg, type) {
+    var box = document.getElementById('toasts');
+    var el = document.createElement('div');
+    el.className = 'toast ' + (type || 'info');
+    el.innerHTML = '<span class="t-dot"></span><span>' + esc(msg) + '</span>';
+    box.appendChild(el);
+    setTimeout(function () { el.style.transition = 'opacity .25s'; el.style.opacity = '0'; setTimeout(function () { el.remove(); }, 260); }, 2600);
+  }
+
+  function snapshot() { return JSON.stringify({ cols: state.cols, rows: state.rows, cellSizeMm: state.cellSizeMm, objects: state.objects }); }
+  function pushUndo() {
+    undoStack.push(snapshot());
+    if (undoStack.length > 50) undoStack.shift();
+    redoStack = [];
+    renderToolbar();
+  }
+  function restore(s) {
+    var d = JSON.parse(s);
+    state.cols = d.cols; state.rows = d.rows; state.cellSizeMm = d.cellSizeMm;
+    state.objects = d.objects;
+    state.selection = null;
+    renderAll();
+  }
+  function undo() { if (!undoStack.length) return; redoStack.push(snapshot()); restore(undoStack.pop()); renderToolbar(); }
+  function redo() { if (!redoStack.length) return; undoStack.push(snapshot()); restore(redoStack.pop()); renderToolbar(); }
+
+  /* 线缆路由（简化演示：单段水平/垂直桥架覆盖判定；生产为后端 Dijkstra 沿桥架精算） */
+  function cableInfo() {
+    var a = byId('r1'), b = byId('r2');
+    if (!a || !b) return null;
+    var A = { x: a.gx + a.gw / 2, y: a.gy + a.gh / 2 };
+    var B = { x: b.gx + b.gw / 2, y: b.gy + b.gh / 2 };
+    var via = null;
+    for (var i = 0; i < state.objects.length; i++) {
+      var o = state.objects[i];
+      if (o.kind !== 'tray') continue;
+      if (o.gh === 1 && o.gw >= 2) {
+        if (A.x >= o.gx - 0.01 && A.x <= o.gx + o.gw + 0.01 && B.x >= o.gx - 0.01 && B.x <= o.gx + o.gw + 0.01) { via = { h: true, cy: o.gy + 0.5 }; break; }
+      } else if (o.gw === 1 && o.gh >= 2) {
+        if (A.y >= o.gy - 0.01 && A.y <= o.gy + o.gh + 0.01 && B.y >= o.gy - 0.01 && B.y <= o.gy + o.gh + 0.01) { via = { h: false, cx: o.gx + 0.5 }; break; }
+      }
+    }
+    var pts, cells;
+    if (via && via.h) {
+      pts = [A, { x: A.x, y: via.cy }, { x: B.x, y: via.cy }, B];
+      cells = Math.abs(A.y - via.cy) + Math.abs(B.x - A.x) + Math.abs(B.y - via.cy);
+    } else if (via && !via.h) {
+      pts = [A, { x: via.cx, y: A.y }, { x: via.cx, y: B.y }, B];
+      cells = Math.abs(A.x - via.cx) + Math.abs(B.y - A.y) + Math.abs(B.x - via.cx);
+    } else {
+      pts = [A, { x: B.x, y: A.y }, B];
+      cells = Math.abs(B.x - A.x) + Math.abs(B.y - A.y);
+    }
+    var trays = state.objects.filter(function (o) { return o.kind === 'tray'; });
+    var bridgeH = trays.length ? trays.reduce(function (s, o) { return s + (o.heightMm || 2400); }, 0) / trays.length : 2400;
+    var rise = 2 * Math.max(0, Math.round(bridgeH) - RACK_TOP_MM);
+    var term = TERM_PER_END_MM * 2;
+    var base = Math.round(cells * state.cellSizeMm);
+    var total = Math.round((base + rise + term) * (1 + SLACK_PCT / 100));
+    return { pts: pts, l2: !!via, base: base, rise: rise, term: term, total: total, bridgeH: bridgeH };
+  }
+  function fmtM(mm) { return (mm / 1000).toFixed(2) + ' m'; }
+
+  /* ── SVG 渲染 ── */
+  function renderSvg() {
+    var c = cellPx();
+    var W = state.cols * c, H = state.rows * c;
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+
+    var g = [];
+    g.push('<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#6b7280"/><line x1="0" y1="0" x2="0" y2="6" stroke="#565f6b" stroke-width="2"/></pattern></defs>');
+
+    var i, j;
+    for (i = 0; i <= state.cols; i++) {
+      g.push('<line x1="' + (i * c) + '" y1="0" x2="' + (i * c) + '" y2="' + H + '" stroke="' + (i % 5 === 0 ? '#d1d5db' : '#ececec') + '" stroke-width="1"/>');
+    }
+    for (j = 0; j <= state.rows; j++) {
+      g.push('<line x1="0" y1="' + (j * c) + '" x2="' + W + '" y2="' + (j * c) + '" stroke="' + (j % 5 === 0 ? '#d1d5db' : '#ececec') + '" stroke-width="1"/>');
+    }
+
+    if (state.guides) {
+      if (state.guides.x != null) g.push('<line x1="' + state.guides.x + '" y1="0" x2="' + state.guides.x + '" y2="' + H + '" stroke="#ff4d4f" stroke-width="1" stroke-dasharray="4 3"/>');
+      if (state.guides.y != null) g.push('<line x1="0" y1="' + state.guides.y + '" x2="' + W + '" y2="' + state.guides.y + '" stroke="#ff4d4f" stroke-width="1" stroke-dasharray="4 3"/>');
+    }
+
+    if ((state.mode === 'tray-pen' || state.mode === 'wall-pen') && state.hoverCell && !state.pen) {
+      g.push('<rect x="' + state.hoverCell.x * c + '" y="' + state.hoverCell.y * c + '" width="' + c + '" height="' + c + '" fill="none" stroke="#1677e6" stroke-width="1.5"/>');
+    }
+
+    var info = cableInfo();
+    if (info) {
+      var d = 'M' + (info.pts[0].x * c) + ' ' + (info.pts[0].y * c);
+      for (var k = 1; k < info.pts.length; k++) d += ' L' + (info.pts[k].x * c) + ' ' + (info.pts[k].y * c);
+      var cColor = info.l2 ? '#389e0d' : '#d46b08';
+      var dash = info.l2 ? '' : ' stroke-dasharray="8 6"';
+      g.push('<path d="' + d + '" fill="none" stroke="' + cColor + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"' + dash + '/>');
+      g.push('<path d="' + d + '" fill="none" stroke="transparent" stroke-width="14" style="cursor:pointer" data-cable="1"/>');
+      g.push('<circle cx="' + (info.pts[0].x * c) + '" cy="' + (info.pts[0].y * c) + '" r="3.5" fill="#fff" stroke="' + cColor + '" stroke-width="2"/>');
+      g.push('<circle cx="' + (info.pts[info.pts.length - 1].x * c) + '" cy="' + (info.pts[info.pts.length - 1].y * c) + '" r="3.5" fill="#fff" stroke="' + cColor + '" stroke-width="2"/>');
+
+      var mid = info.pts[Math.floor(info.pts.length / 2)];
+      var bx = mid.x * c, by = mid.y * c;
+      var label = (info.l2 ? '沿桥架 ' : '估算 ') + fmtM(info.total);
+      var tw = 14 + label.length * 7.5;
+      g.push('<g transform="translate(' + bx + ',' + by + ')">');
+      g.push('<rect x="' + (-tw / 2) + '" y="-32" width="' + tw + '" height="18" rx="9" fill="' + (info.l2 ? '#f6ffed' : '#fff7e6') + '" stroke="' + (info.l2 ? '#b7eb8f' : '#ffd591') + '" stroke-width="1"/>');
+      g.push('<text x="0" y="-19" text-anchor="middle" font-size="11" fill="' + (info.l2 ? '#389e0d' : '#d46b08') + '">' + esc(label) + '</text>');
+      g.push('</g>');
+    }
+
+    state.objects.forEach(function (o) {
+      var x = o.gx * c, y = o.gy * c, w = o.gw * c, h = o.gh * c;
+      var sel = state.selection === o.id;
+      var hoverErase = state.mode === 'erase' && state.hoverCell && hitTestCell(o, state.hoverCell);
+      if (o.kind === 'rack') {
+        g.push('<g data-id="' + o.id + '" style="cursor:move">');
+        g.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="2" fill="' + KIND.rack.fill + '" stroke="' + KIND.rack.stroke + '" stroke-width="1.5"' + (hoverErase ? ' stroke="#ff4d4f" stroke-width="2"' : '') + '/>');
+        var fs = Math.max(10, Math.min(13, 12 * state.zoom));
+        g.push('<text x="' + (x + w / 2) + '" y="' + (y + h / 2 + fs * 0.35) + '" text-anchor="middle" font-size="' + fs + '" font-weight="600" fill="#fff">' + esc(o.label || '机柜') + '</text>');
+        g.push('</g>');
+      } else if (o.kind === 'tray') {
+        var horiz = o.gh === 1;
+        var thick = (TRAY_THICK[o.widthMm] || 13) * state.zoom;
+        var rx, ry, rw, rh;
+        if (horiz) { rx = x; ry = y + (h - thick) / 2; rw = w; rh = thick; }
+        else { rx = x + (w - thick) / 2; ry = y; rw = thick; rh = h; }
+        g.push('<g data-id="' + o.id + '" style="cursor:move">');
+        g.push('<rect x="' + rx + '" y="' + ry + '" width="' + rw + '" height="' + rh + '" rx="2" fill="' + KIND.tray.fill + '" stroke="' + KIND.tray.stroke + '" stroke-width="1.5"' + (hoverErase ? ' stroke="#ff4d4f" stroke-width="2"' : '') + '/>');
+        var rungCount = horiz ? o.gw : o.gh;
+        for (var m = 1; m < rungCount; m++) {
+          if (horiz) g.push('<line x1="' + (x + m * c) + '" y1="' + ry + '" x2="' + (x + m * c) + '" y2="' + (ry + rh) + '" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>');
+          else g.push('<line x1="' + rx + '" y1="' + (y + m * c) + '" x2="' + (rx + rw) + '" y2="' + (y + m * c) + '" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>');
+        }
+        g.push('</g>');
+        if (sel && state.mode === 'select') {
+          var hx1 = horiz ? x : x + w / 2, hy1 = horiz ? y + h / 2 : y;
+          var hx2 = horiz ? x + w : x + w / 2, hy2 = horiz ? y + h / 2 : y + h;
+          var cur = horiz ? 'ew-resize' : 'ns-resize';
+          g.push('<rect data-handle="a" data-id="' + o.id + '" x="' + (hx1 - 5) + '" y="' + (hy1 - 5) + '" width="10" height="10" rx="2" fill="#fff" stroke="#1677e6" stroke-width="2" style="cursor:' + cur + '"/>');
+          g.push('<rect data-handle="b" data-id="' + o.id + '" x="' + (hx2 - 5) + '" y="' + (hy2 - 5) + '" width="10" height="10" rx="2" fill="#fff" stroke="#1677e6" stroke-width="2" style="cursor:' + cur + '"/>');
+        }
+      } else if (o.kind === 'wall') {
+        g.push('<g data-id="' + o.id + '" style="cursor:move">');
+        g.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="url(#hatch)" stroke="' + KIND.wall.stroke + '" stroke-width="1"' + (hoverErase ? ' stroke="#ff4d4f" stroke-width="2"' : '') + '/>');
+        g.push('</g>');
+      } else {
+        g.push('<g data-id="' + o.id + '" style="cursor:move">');
+        g.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1" fill="' + KIND.pillar.fill + '" stroke="' + KIND.pillar.stroke + '"' + (hoverErase ? ' stroke="#ff4d4f" stroke-width="2"' : '') + '/>');
+        g.push('<line x1="' + x + '" y1="' + y + '" x2="' + (x + w) + '" y2="' + (y + h) + '" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>');
+        g.push('</g>');
+      }
+      if (sel) {
+        if (o.kind === 'tray') {
+          var th = (TRAY_THICK[o.widthMm] || 13) * state.zoom;
+          var ox = o.gh === 1 ? x : x + (w - th) / 2;
+          var oy = o.gh === 1 ? y + (h - th) / 2 : y;
+          var ow = o.gh === 1 ? w : th;
+          var oh = o.gh === 1 ? th : h;
+          g.push('<rect x="' + (ox - 4) + '" y="' + (oy - 4) + '" width="' + (ow + 8) + '" height="' + (oh + 8) + '" fill="none" stroke="#1677e6" stroke-width="1.5" stroke-dasharray="5 3" pointer-events="none"/>');
+        } else {
+          g.push('<rect x="' + (x - 3) + '" y="' + (y - 3) + '" width="' + (w + 6) + '" height="' + (h + 6) + '" fill="none" stroke="#1677e6" stroke-width="1.5" stroke-dasharray="5 3" pointer-events="none"/>');
+        }
+      }
+    });
+
+    if (state.pen) {
+      var p = state.pen;
+      var kindMeta = p.kind === 'tray' ? KIND.tray : KIND.wall;
+      var gx = Math.min(p.ax, p.bx), gy = Math.min(p.ay, p.by);
+      var gwc = p.axis === 'h' ? Math.abs(p.bx - p.ax) + 1 : 1;
+      var ghc = p.axis === 'v' ? Math.abs(p.by - p.ay) + 1 : 1;
+      g.push('<rect x="' + (gx * c) + '" y="' + (gy * c) + '" width="' + (gwc * c) + '" height="' + (ghc * c) + '" rx="2" fill="' + kindMeta.fill + '" fill-opacity="0.35" stroke="' + kindMeta.stroke + '" stroke-width="1.5" stroke-dasharray="6 3"/>');
+      var lenCells = p.axis === 'h' ? gwc : ghc;
+      var pl = lenCells + ' 格 · ' + (lenCells * state.cellSizeMm / 1000).toFixed(1) + ' m';
+      var lx = (gx + gwc / 2) * c, ly = gy * c;
+      var pw = 16 + pl.length * 7;
+      g.push('<g transform="translate(' + lx + ',' + ly + ')">');
+      g.push('<rect x="' + (-pw / 2) + '" y="-28" width="' + pw + '" height="20" rx="4" fill="rgba(0,0,0,0.78)"/>');
+      g.push('<text x="0" y="-14" text-anchor="middle" font-size="11" fill="#fff">' + esc(pl) + '</text>');
+      g.push('</g>');
+    }
+
+    if (state.dropCell) {
+      var dc = state.dropCell;
+      g.push('<rect x="' + (dc.x * c) + '" y="' + (dc.y * c) + '" width="' + (dc.w * c) + '" height="' + (dc.h * c) + '" fill="' + (state.dropValid ? 'rgba(22,119,230,0.15)' : 'rgba(255,77,79,0.15)') + '" stroke="' + (state.dropValid ? '#1677e6' : '#ff4d4f') + '" stroke-width="1.5" stroke-dasharray="5 3"/>');
+    }
+
+    svg.innerHTML = g.join('');
+  }
+
+  function hitTestCell(o, cell) {
+    return cell.x >= o.gx && cell.x < o.gx + o.gw && cell.y >= o.gy && cell.y < o.gy + o.gh;
+  }
+  function overlaps(gx, gy, gw, gh, exceptId) {
+    return state.objects.some(function (o) {
+      if (o.id === exceptId) return false;
+      return gx < o.gx + o.gw && gx + gw > o.gx && gy < o.gy + o.gh && gy + gh > o.gy;
+    });
+  }
+
+  /* ── 标尺 ── */
+  function drawRulers() {
+    var c = cellPx();
+    var dpr = window.devicePixelRatio || 1;
+    var W = state.cols * c, H = state.rows * c;
+    var mPerCell = state.cellSizeMm / 1000;
+    var dec = mPerCell < 1 ? 1 : 0;
+
+    var top = document.getElementById('ruler-top-canvas');
+    top.style.width = W + 'px'; top.style.height = '22px';
+    top.width = Math.max(1, Math.round(W * dpr)); top.height = Math.round(22 * dpr);
+    var ctx = top.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, 22);
+    for (var i = 0; i <= state.cols; i++) {
+      var x = i * c;
+      ctx.strokeStyle = i % 5 === 0 ? '#bfbfbf' : '#e5e5e5';
+      ctx.beginPath(); ctx.moveTo(x + 0.5, 22); ctx.lineTo(x + 0.5, i % 5 === 0 ? 6 : 14); ctx.stroke();
+      if (i % 5 === 0 && i > 0 && i < state.cols) {
+        ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText((i * mPerCell).toFixed(dec) + ' m', x, 11);
+      }
+    }
+
+    var left = document.getElementById('ruler-left-canvas');
+    left.style.width = '22px'; left.style.height = H + 'px';
+    left.width = Math.round(22 * dpr); left.height = Math.max(1, Math.round(H * dpr));
+    var ctx2 = left.getContext('2d');
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.clearRect(0, 0, 22, H);
+    for (var j = 0; j <= state.rows; j++) {
+      var y = j * c;
+      ctx2.strokeStyle = j % 5 === 0 ? '#bfbfbf' : '#e5e5e5';
+      ctx2.beginPath(); ctx2.moveTo(22, y + 0.5); ctx2.lineTo(j % 5 === 0 ? 6 : 14, y + 0.5); ctx2.stroke();
+      if (j % 5 === 0 && j > 0 && j < state.rows) {
+        ctx2.fillStyle = 'rgba(0,0,0,0.45)'; ctx2.font = '10px sans-serif'; ctx2.textAlign = 'center';
+        ctx2.save(); ctx2.translate(11, y); ctx2.rotate(-Math.PI / 2); ctx2.fillText((j * mPerCell).toFixed(dec) + ' m', 0, 0); ctx2.restore();
+      }
+    }
+  }
+
+  /* ── 属性面板 ── */
+  function roomCardHtml() {
+    var counts = { rack: 0, tray: 0, wall: 0, pillar: 0 };
+    state.objects.forEach(function (o) { counts[o.kind]++; });
+    var info = cableInfo();
+    var wm = (state.cols * state.cellSizeMm / 1000).toFixed(1);
+    var hm = (state.rows * state.cellSizeMm / 1000).toFixed(1);
+    var html = '<div class="insp-card"><h4>机房信息</h4>';
+    html += '<div class="kv"><span class="k">网格规模</span><span class="v">' + state.cols + ' × ' + state.rows + ' 格</span></div>';
+    html += '<div class="kv"><span class="k">单元格</span><span class="v">' + state.cellSizeMm + ' × ' + state.cellSizeMm + ' mm</span></div>';
+    html += '<div class="kv"><span class="k">净尺寸</span><span class="v">' + wm + ' × ' + hm + ' m</span></div>';
+    html += '<div class="kv"><span class="k">面积</span><span class="v">' + (parseFloat(wm) * parseFloat(hm)).toFixed(1) + ' m²</span></div>';
+    html += '<div class="kv"><span class="k">元素</span><span class="v">机柜 ' + counts.rack + ' · 桥架 ' + counts.tray + ' · 墙体 ' + counts.wall + ' · 立柱 ' + counts.pillar + '</span></div>';
+    html += '<div class="kv"><span class="k">线缆合计</span><span class="v">' + (info ? fmtM(info.total) : '<span style="color:var(--error)">端点缺失</span>') + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderInspector() {
+    var box = document.getElementById('inspector');
+    var sel = state.selection && state.selection !== 'cable' ? byId(state.selection) : null;
+    var info = cableInfo();
+    var html = '';
+
+    if (state.selection === 'cable') {
+      html += '<div class="insp-card"><h4><span class="kind-badge tag-ok">线缆</span>属性</h4>';
+      if (!info) {
+        html += '<p style="font-size:13px;color:var(--error)">线缆端点缺失（机柜已被删除）</p>';
+      } else {
+        var a = byId('r1'), b = byId('r2');
+        html += '<div class="endpoint-row"><span class="ep-label">起点</span><span class="ep-value">' + esc((a && a.label) || '-') + '</span></div>';
+        html += '<div class="endpoint-row"><span class="ep-label">终点</span><span class="ep-value">' + esc((b && b.label) || '-') + '</span></div>';
+        html += '<div class="kv"><span class="k">路由状态</span><span class="v">' + (info.l2 ? '<span class="tag tag-ok">沿桥架 · 精确</span>' : '<span class="tag tag-warn">曼哈顿 · 估算</span>') + '</span></div>';
+        html += '<div class="kv"><span class="k">水平敷设</span><span class="v">' + fmtM(info.base) + '</span></div>';
+        html += '<div class="kv"><span class="k">垂直爬升</span><span class="v">' + fmtM(info.rise) + '</span></div>';
+        html += '<div class="kv"><span class="k">端接预留</span><span class="v">' + fmtM(info.term) + '</span></div>';
+        html += '<div class="kv"><span class="k">裕量系数</span><span class="v">' + SLACK_PCT + '%</span></div>';
+        html += '<div class="kv"><span class="k">合计长度</span><span class="v hl">' + fmtM(info.total) + '</span></div>';
+        html += '<div class="kv"><span class="k">桥架敷设高度</span><span class="v">' + (info.bridgeH / 1000).toFixed(1) + ' m</span></div>';
+      }
+      html += '<p class="insp-note">原型采用简化路由演示；生产版本由后端 Dijkstra 沿桥架逐格精算，不可达时回退曼哈顿并标记。</p></div>';
+      html += roomCardHtml();
+    } else if (sel) {
+      var meta = KIND[sel.kind];
+      var dotColor = { rack: '#1677ff', tray: '#fa8c16', wall: '#6b7280', pillar: '#374151' }[sel.kind];
+      var dotBg = { rack: 'var(--primary-bg)', tray: 'var(--warning-bg)', wall: '#f0f0f0', pillar: '#f0f0f0' }[sel.kind];
+      html += '<div class="insp-card"><h4><span class="kind-badge" style="background:' + dotBg + ';color:' + dotColor + '">' + meta.name + '</span>属性</h4>';
+      if (sel.kind === 'rack') {
+        html += '<div class="form-item"><label>机柜名称</label><input type="text" maxlength="20" value="' + esc(sel.label || '') + '" data-bind="label"></div>';
+        html += '<div class="kv"><span class="k">位置</span><span class="v">第 ' + (sel.gx + 1) + ' 列 · 第 ' + (sel.gy + 1) + ' 行</span></div>';
+        html += '<div class="kv"><span class="k">占用</span><span class="v">' + sel.gw + ' × ' + sel.gh + ' 格</span></div>';
+        html += '<p class="insp-note">机柜四向端口为线缆连接锚点；拖动改变位置后线缆路由即时重算。</p>';
+      } else if (sel.kind === 'tray') {
+        var horiz = sel.gh === 1;
+        html += '<div class="form-item"><label>桥架型号（槽宽）</label><select data-bind="widthMm">';
+        [200, 300, 400, 500].forEach(function (w) {
+          html += '<option value="' + w + '"' + (sel.widthMm === w ? ' selected' : '') + '>' + w + ' mm</option>';
+        });
+        html += '</select></div>';
+        html += '<div class="form-item"><label>敷设高度（桥架面距地）</label><div class="fi-ctrl"><input type="number" min="2000" max="4000" step="100" value="' + (sel.heightMm || 2400) + '" data-bind="heightMm"><span class="unit">mm</span></div></div>';
+        html += '<div class="kv"><span class="k">走向</span><span class="v">' + (horiz ? '水平' : '垂直') + '</span></div>';
+        html += '<div class="kv"><span class="k">跨度</span><span class="v">' + (horiz ? sel.gw : sel.gh) + ' 格 · ' + ((horiz ? sel.gw : sel.gh) * state.cellSizeMm / 1000).toFixed(1) + ' m</span></div>';
+        html += '<p class="insp-note">选中后拖动两端手柄可延伸或缩短桥架（吸附格线）；桥架增删后线缆路由与长度即时联动。</p>';
+        html += '<button class="btn-danger" style="margin-top:12px" data-act="delete">删除桥架</button>';
+      } else {
+        html += '<div class="kv"><span class="k">位置</span><span class="v">第 ' + (sel.gx + 1) + ' 列 · 第 ' + (sel.gy + 1) + ' 行</span></div>';
+        html += '<div class="kv"><span class="k">占用</span><span class="v">' + sel.gw + ' × ' + sel.gh + ' 格</span></div>';
+        html += '<button class="btn-danger" style="margin-top:12px" data-act="delete">删除' + meta.name + '</button>';
+      }
+      html += '</div>';
+      html += roomCardHtml();
+    } else {
+      html += roomCardHtml();
+      html += '<div class="insp-card"><h4>操作指引</h4>';
+      html += '<div class="kv"><span class="k">桥架画笔</span><span class="v">T · 按住拖画</span></div>';
+      html += '<div class="kv"><span class="k">面板拖入</span><span class="v">拖元素入画布</span></div>';
+      html += '<div class="kv"><span class="k">端点拉伸</span><span class="v">选中桥架拖手柄</span></div>';
+      html += '<div class="kv"><span class="k">网格调整</span><span class="v">顶栏 网格设置</span></div>';
+      html += '<p class="insp-note">点击画布中的线缆可查看路由与长度明细。</p></div>';
+    }
+    box.innerHTML = html;
+
+    box.querySelectorAll('[data-bind]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        var o = state.selection ? byId(state.selection) : null;
+        if (!o) return;
+        pushUndo();
+        var k = el.getAttribute('data-bind');
+        if (k === 'widthMm' || k === 'heightMm') o[k] = parseInt(el.value, 10) || (k === 'widthMm' ? 300 : 2400);
+        else o[k] = el.value;
+        renderAll();
+        toast('属性已更新', 'success');
+      });
+    });
+    box.querySelectorAll('[data-act="delete"]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var o = state.selection ? byId(state.selection) : null;
+        if (!o) return;
+        pushUndo();
+        state.objects = state.objects.filter(function (x) { return x.id !== o.id; });
+        state.selection = null;
+        renderAll();
+        toast(KIND[o.kind].name + '已删除' + (o.kind === 'tray' ? '，线缆已切换为估算路由' : ''), 'success');
+      });
+    });
+  }
+
+  function renderStatus() {
+    var modeNames = { 'select': ['选择模式', 'm-select'], 'tray-pen': ['桥架画笔', 'm-tray'], 'wall-pen': ['墙体画笔', 'm-wall'], 'erase': ['擦除模式', 'm-erase'] };
+    var mn = modeNames[state.mode];
+    var chip = document.getElementById('sb-mode');
+    chip.textContent = mn[0];
+    chip.className = 'mode-chip ' + mn[1];
+    var pos = document.getElementById('sb-pos');
+    if (state.hoverCell) {
+      var mx = ((state.hoverCell.x + 0.5) * state.cellSizeMm / 1000).toFixed(2);
+      var my = ((state.hoverCell.y + 0.5) * state.cellSizeMm / 1000).toFixed(2);
+      pos.textContent = '第 ' + (state.hoverCell.x + 1) + ' 列 · 第 ' + (state.hoverCell.y + 1) + ' 行 · (' + mx + ' m, ' + my + ' m)';
+    } else pos.textContent = '—';
+    var counts = { rack: 0, tray: 0, wall: 0, pillar: 0 };
+    state.objects.forEach(function (o) { counts[o.kind]++; });
+    var info = cableInfo();
+    var sc = document.getElementById('sb-count');
+    sc.innerHTML = '机柜 ' + counts.rack + ' · 桥架 ' + counts.tray + ' · 墙体 ' + counts.wall + ' · 立柱 ' + counts.pillar +
+      ' · 线缆 <span style="color:' + (info ? (info.l2 ? 'var(--success-deep)' : 'var(--warning-deep)') : 'var(--error)') + ';font-weight:600">' + (info ? fmtM(info.total) : '端点缺失') + '</span>';
+  }
+
+  function renderToolbar() {
+    document.getElementById('btn-undo').disabled = !undoStack.length;
+    document.getElementById('btn-redo').disabled = !redoStack.length;
+    document.getElementById('zoom-label').textContent = Math.round(state.zoom * 100) + '%';
+    ['select', 'tray', 'wall', 'erase'].forEach(function (m) {
+      document.getElementById('mode-' + m).classList.toggle('active', state.mode === (m === 'select' ? 'select' : m + '-pen'));
+    });
+  }
+
+  function renderAll() {
+    renderSvg();
+    drawRulers();
+    renderInspector();
+    renderStatus();
+    renderToolbar();
+  }
+
+  /* ── 交互：指针 ── */
+  function cellFromEvent(e) {
+    var r = svg.getBoundingClientRect();
+    var c = cellPx();
+    var x = Math.floor((e.clientX - r.left) / c);
+    var y = Math.floor((e.clientY - r.top) / c);
+    if (x < 0 || y < 0 || x >= state.cols || y >= state.rows) return null;
+    return { x: x, y: y };
+  }
+
+  function setMode(m) {
+    state.mode = m;
+    state.pen = null;
+    if (m !== 'select') state.selection = null;
+    svgBox.style.cursor = m === 'select' ? 'default' : 'crosshair';
+    renderAll();
+  }
+
+  svgBox.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0) return;
+    var cell = cellFromEvent(e);
+    svgBox.setPointerCapture(e.pointerId);
+
+    if (state.mode === 'select') {
+      var handleEl = e.target.closest ? e.target.closest('[data-handle]') : null;
+      if (handleEl) {
+        drag = { type: 'handle', id: handleEl.getAttribute('data-id'), end: handleEl.getAttribute('data-handle'), pushed: false };
+        return;
+      }
+      var cableEl = e.target.closest ? e.target.closest('[data-cable]') : null;
+      if (cableEl) { state.selection = 'cable'; renderAll(); return; }
+      var objEl = e.target.closest ? e.target.closest('[data-id]') : null;
+      if (objEl && cell) {
+        var o = byId(objEl.getAttribute('data-id'));
+        if (o) {
+          state.selection = o.id;
+          drag = { type: 'move', id: o.id, offX: cell.x - o.gx, offY: cell.y - o.gy, pushed: false };
+          renderAll();
+          return;
+        }
+      }
+      state.selection = null;
+      renderAll();
+      return;
+    }
+
+    if (state.mode === 'erase') {
+      if (!cell) return;
+      var victim = state.objects.find(function (o) { return hitTestCell(o, cell); });
+      if (victim) {
+        pushUndo();
+        state.objects = state.objects.filter(function (x) { return x.id !== victim.id; });
+        state.selection = null;
+        renderAll();
+        toast(KIND[victim.kind].name + '已删除' + (victim.kind === 'tray' ? '，线缆已切换为估算路由' : ''), 'success');
+      }
+      return;
+    }
+
+    if (state.mode === 'tray-pen' || state.mode === 'wall-pen') {
+      if (!cell) return;
+      state.pen = { ax: cell.x, ay: cell.y, bx: cell.x, by: cell.y, axis: null, kind: state.mode === 'tray-pen' ? 'tray' : 'wall' };
+      renderSvg();
+    }
+  });
+
+  svgBox.addEventListener('pointermove', function (e) {
+    var cell = cellFromEvent(e);
+    var changed = (cell && (!state.hoverCell || cell.x !== state.hoverCell.x || cell.y !== state.hoverCell.y)) || (!cell && state.hoverCell);
+    state.hoverCell = cell;
+    if (changed) {
+      renderStatus();
+      if (state.mode !== 'select') renderSvg();
+    }
+
+    if (state.pen) {
+      if (!cell) return;
+      var p = state.pen;
+      if (!p.axis && (cell.x !== p.ax || cell.y !== p.ay)) {
+        p.axis = Math.abs(cell.x - p.ax) >= Math.abs(cell.y - p.ay) ? 'h' : 'v';
+      }
+      if (p.axis === 'h') { p.bx = cell.x; p.by = p.ay; }
+      else if (p.axis === 'v') { p.by = cell.y; p.bx = p.ax; }
+      renderSvg();
+      return;
+    }
+
+    if (!drag) return;
+
+    if (drag.type === 'move') {
+      var o = byId(drag.id);
+      if (!o || !cell) return;
+      var tgx = cell.x - drag.offX;
+      var tgy = cell.y - drag.offY;
+      var snapped = snapPosition(o, tgx, tgy);
+      tgx = Math.max(0, Math.min(state.cols - o.gw, snapped.gx));
+      tgy = Math.max(0, Math.min(state.rows - o.gh, snapped.gy));
+      state.guides = snapped.guides;
+      if (tgx !== o.gx || tgy !== o.gy) {
+        if (!drag.pushed) { pushUndo(); drag.pushed = true; }
+        o.gx = tgx; o.gy = tgy;
+        renderSvg(); renderStatus();
+      }
+    } else if (drag.type === 'handle') {
+      var t = byId(drag.id);
+      if (!t || !cell) return;
+      var horiz = t.gh === 1;
+      if (horiz) {
+        if (drag.end === 'a') {
+          var na = Math.max(0, Math.min(cell.x, t.gx + t.gw - 1));
+          if (na !== t.gx) {
+            if (!drag.pushed) { pushUndo(); drag.pushed = true; }
+            t.gh = 1;
+            var right = t.gx + t.gw;
+            t.gx = na; t.gw = right - na;
+          }
+        } else {
+          var nb = Math.max(t.gx + 1, Math.min(cell.x + 1, state.cols));
+          if (nb !== t.gx + t.gw) {
+            if (!drag.pushed) { pushUndo(); drag.pushed = true; }
+            t.gw = nb - t.gx;
+          }
+        }
+      } else {
+        if (drag.end === 'a') {
+          var na2 = Math.max(0, Math.min(cell.y, t.gy + t.gh - 1));
+          if (na2 !== t.gy) {
+            if (!drag.pushed) { pushUndo(); drag.pushed = true; }
+            t.gw = 1;
+            var bottom = t.gy + t.gh;
+            t.gy = na2; t.gh = bottom - na2;
+          }
+        } else {
+          var nb2 = Math.max(t.gy + 1, Math.min(cell.y + 1, state.rows));
+          if (nb2 !== t.gy + t.gh) {
+            if (!drag.pushed) { pushUndo(); drag.pushed = true; }
+            t.gh = nb2 - t.gy;
+          }
+        }
+      }
+      renderSvg(); renderInspector(); renderStatus();
+    }
+  });
+
+  function snapPosition(o, gx, gy) {
+    var guides = {};
+    var c = cellPx();
+    var tol = 6 / c;
+    var best = null;
+    state.objects.forEach(function (x) {
+      if (x.id === o.id) return;
+      [x.gx, x.gx + x.gw].forEach(function (xe) {
+        [gx, gx + o.gw].forEach(function (me) {
+          var d = xe - me;
+          if (Math.abs(d) < tol && (!best || Math.abs(d) < Math.abs(best.d))) best = { d: d, v: xe, ax: 'x' };
+        });
+      });
+      [x.gy, x.gy + x.gh].forEach(function (ye) {
+        [gy, gy + o.gh].forEach(function (me) {
+          var d = ye - me;
+          if (Math.abs(d) < tol && (!best || Math.abs(d) < Math.abs(best.d))) best = { d: d, v: ye, ax: 'y' };
+        });
+      });
+    });
+    if (best) {
+      if (best.ax === 'x') { gx += best.d; guides.x = best.v * c; }
+      else { gy += best.d; guides.y = best.v * c; }
+    }
+    return { gx: gx, gy: gy, guides: guides };
+  }
+
+  svgBox.addEventListener('pointerup', function () {
+    if (state.pen) {
+      var p = state.pen;
+      var len = p.axis === 'h' ? Math.abs(p.bx - p.ax) + 1 : Math.abs(p.by - p.ay) + 1;
+      if (p.axis && len >= 2) {
+        pushUndo();
+        var obj = {
+          id: 'n' + (idSeq++), kind: p.kind,
+          gx: Math.min(p.ax, p.bx), gy: Math.min(p.ay, p.by),
+          gw: p.axis === 'h' ? len : 1, gh: p.axis === 'h' ? 1 : len
+        };
+        if (p.kind === 'tray') { obj.widthMm = 300; obj.heightMm = 2400; }
+        state.objects.push(obj);
+        toast('已绘制' + KIND[p.kind].name + ' ' + len + ' 格 · ' + (len * state.cellSizeMm / 1000).toFixed(1) + ' m' + (p.kind === 'tray' ? '，覆盖两端机柜后自动切换精确路由' : ''), 'success');
+      } else if (p.axis) {
+        toast(KIND[p.kind].name + '至少需要 2 格', 'error');
+      }
+      state.pen = null;
+      renderAll();
+    }
+    if (drag) {
+      state.guides = null;
+      drag = null;
+      renderSvg();
+    }
+  });
+
+  svgBox.addEventListener('pointerleave', function () {
+    if (!drag && !state.pen) {
+      state.hoverCell = null;
+      renderStatus();
+      if (state.mode !== 'select') renderSvg();
+    }
+  });
+
+  /* ── 面板拖入（HTML5 DnD） ── */
+  var paletteData = [
+    { kind: 'rack', desc: '2 × 1 格 · 标准机柜' },
+    { kind: 'tray', desc: '4 × 1 格 · 可拉伸' },
+    { kind: 'wall', desc: '4 × 1 格 · 障碍边界' },
+    { kind: 'pillar', desc: '1 × 1 格 · 结构立柱' }
+  ];
+  var paletteList = document.getElementById('palette-list');
+  paletteData.forEach(function (p) {
+    var meta = KIND[p.kind];
+    var el = document.createElement('div');
+    el.className = 'palette-item';
+    el.draggable = true;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', '拖入' + meta.name);
+    el.innerHTML = '<span class="thumb" style="background:' + meta.fill + ';border:1px solid ' + meta.stroke + '"></span>' +
+      '<span><span class="pi-name">' + meta.name + '</span><br><span class="pi-desc">' + p.desc + '</span></span>';
+    el.addEventListener('dragstart', function (e) {
+      currentDragKind = p.kind;
+      e.dataTransfer.setData('text/plain', p.kind);
+      e.dataTransfer.effectAllowed = 'copy';
+    });
+    paletteList.appendChild(el);
+  });
+
+  svgBox.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    var kind = currentDragKind;
+    if (!kind) return;
+    var meta = KIND[kind];
+    var cell = cellFromEvent(e);
+    if (!cell) { if (state.dropCell) { state.dropCell = null; renderSvg(); } return; }
+    var gx = Math.min(cell.x, state.cols - meta.gw);
+    var gy = Math.min(cell.y, state.rows - meta.gh);
+    state.dropCell = { x: gx, y: gy, w: meta.gw, h: meta.gh };
+    state.dropValid = !overlaps(gx, gy, meta.gw, meta.gh, null);
+    renderSvg();
+  });
+  svgBox.addEventListener('dragleave', function () { if (state.dropCell) { state.dropCell = null; renderSvg(); } });
+  svgBox.addEventListener('drop', function (e) {
+    e.preventDefault();
+    var kind = e.dataTransfer.getData('text/plain');
+    state.dropCell = null;
+    currentDragKind = null;
+    if (!kind || !KIND[kind]) return;
+    var meta = KIND[kind];
+    var cell = cellFromEvent(e);
+    if (!cell) { renderSvg(); return; }
+    var gx = Math.min(cell.x, state.cols - meta.gw);
+    var gy = Math.min(cell.y, state.rows - meta.gh);
+    if (overlaps(gx, gy, meta.gw, meta.gh, null)) {
+      renderSvg();
+      toast('放置位置与已有元素重叠，已取消', 'error');
+      return;
+    }
+    pushUndo();
+    var obj = { id: 'n' + (idSeq++), kind: kind, gx: gx, gy: gy, gw: meta.gw, gh: meta.gh };
+    if (kind === 'rack') obj.label = '机柜-' + String(countKind('rack') + 1).padStart(2, '0');
+    if (kind === 'tray') { obj.widthMm = 300; obj.heightMm = 2400; }
+    state.objects.push(obj);
+    state.selection = obj.id;
+    state.mode = 'select';
+    renderAll();
+    toast(KIND[kind].name + '已放置（吸附格线）', 'success');
+  });
+
+  /* ── 网格设置 ── */
+  var gridModal = document.getElementById('grid-modal');
+  var pendingCellSize = 600;
+
+  function occupiedBounds() {
+    var maxR = 0, maxB = 0;
+    state.objects.forEach(function (o) {
+      maxR = Math.max(maxR, o.gx + o.gw);
+      maxB = Math.max(maxB, o.gy + o.gh);
+    });
+    return { cols: Math.max(4, maxR), rows: Math.max(4, maxB) };
+  }
+
+  document.getElementById('btn-grid').addEventListener('click', function () {
+    var b = occupiedBounds();
+    pendingCellSize = state.cellSizeMm;
+    document.getElementById('cols-input').value = state.cols;
+    document.getElementById('rows-input').value = state.rows;
+    document.getElementById('cols-input').min = b.cols;
+    document.getElementById('rows-input').min = b.rows;
+    document.querySelectorAll('#cell-size-group .cs-option').forEach(function (el) {
+      el.classList.toggle('active', parseInt(el.getAttribute('data-mm'), 10) === state.cellSizeMm);
+    });
+    validateGridForm();
+    gridModal.classList.add('open');
+  });
+
+  function validateGridForm() {
+    var colsIn = document.getElementById('cols-input');
+    var rowsIn = document.getElementById('rows-input');
+    var b = occupiedBounds();
+    var ok = true;
+    [colsIn, rowsIn].forEach(function (input) {
+      var v = parseInt(input.value, 10);
+      var min = parseInt(input.min, 10);
+      var invalid = isNaN(v) || v < min || v > 60;
+      input.classList.toggle('invalid', invalid);
+      if (invalid) ok = false;
+    });
+    var colsHint = document.getElementById('cols-hint');
+    var rowsHint = document.getElementById('rows-hint');
+    if (!isNaN(parseInt(colsIn.value, 10)) && parseInt(colsIn.value, 10) < b.cols) {
+      colsHint.className = 'field-hint err';
+      colsHint.textContent = '存在元素占用至第 ' + b.cols + ' 列，无法缩小到该值';
+      ok = false;
+    } else {
+      colsHint.className = 'field-hint ok';
+      colsHint.textContent = '元素占用至第 ' + b.cols + ' 列，最小可调整为 ' + b.cols;
+    }
+    if (!isNaN(parseInt(rowsIn.value, 10)) && parseInt(rowsIn.value, 10) < b.rows) {
+      rowsHint.className = 'field-hint err';
+      rowsHint.textContent = '存在元素占用至第 ' + b.rows + ' 行，无法缩小到该值';
+      ok = false;
+    } else {
+      rowsHint.className = 'field-hint ok';
+      rowsHint.textContent = '元素占用至第 ' + b.rows + ' 行，最小可调整为 ' + b.rows;
+    }
+    document.getElementById('grid-apply').disabled = !ok;
+    return ok;
+  }
+
+  [['cols', 'minus', -1], ['cols', 'plus', 1], ['rows', 'minus', -1], ['rows', 'plus', 1]].forEach(function (cfg) {
+    document.getElementById(cfg[0] + '-' + cfg[1]).addEventListener('click', function () {
+      var input = document.getElementById(cfg[0] + '-input');
+      var v = parseInt(input.value, 10) || parseInt(input.min, 10);
+      var min = parseInt(input.min, 10);
+      input.value = Math.max(min, Math.min(60, v + cfg[2]));
+      validateGridForm();
+    });
+  });
+  ['cols-input', 'rows-input'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', validateGridForm);
+  });
+  document.querySelectorAll('#cell-size-group .cs-option').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('#cell-size-group .cs-option').forEach(function (x) { x.classList.remove('active'); });
+      el.classList.add('active');
+      pendingCellSize = parseInt(el.getAttribute('data-mm'), 10);
+    });
+  });
+  document.getElementById('grid-cancel').addEventListener('click', function () { gridModal.classList.remove('open'); });
+  document.getElementById('grid-apply').addEventListener('click', function () {
+    if (!validateGridForm()) return;
+    var nc = parseInt(document.getElementById('cols-input').value, 10);
+    var nr = parseInt(document.getElementById('rows-input').value, 10);
+    pushUndo();
+    var grew = nc > state.cols || nr > state.rows;
+    var shrank = nc < state.cols || nr < state.rows;
+    state.cols = nc; state.rows = nr; state.cellSizeMm = pendingCellSize;
+    gridModal.classList.remove('open');
+    renderAll();
+    fitZoom(true);
+    if (shrank) toast('网格已收缩至 ' + nc + ' × ' + nr + '（受元素占用边界保护）', 'success');
+    else if (grew) toast('网格已扩展至 ' + nc + ' × ' + nr + '，元素位置保持不变', 'success');
+    else toast('网格规格已更新', 'success');
+  });
+
+  /* ── 缩放 ── */
+  function setZoom(z) {
+    state.zoom = Math.max(0.4, Math.min(2, Math.round(z * 20) / 20));
+    renderAll();
+  }
+  document.getElementById('btn-zoom-in').addEventListener('click', function () { setZoom(state.zoom + 0.1); });
+  document.getElementById('btn-zoom-out').addEventListener('click', function () { setZoom(state.zoom - 0.1); });
+  function fitZoom(silent) {
+    var availW = scroll.clientWidth - 70;
+    var availH = scroll.clientHeight - 70;
+    var z = Math.min(availW / (state.cols * C_BASE), availH / (state.rows * C_BASE));
+    setZoom(z);
+    if (!silent) toast('已缩放至 ' + Math.round(state.zoom * 100) + '%', 'info');
+  }
+  document.getElementById('btn-fit').addEventListener('click', function () { fitZoom(false); });
+
+  document.getElementById('btn-undo').addEventListener('click', undo);
+  document.getElementById('btn-redo').addEventListener('click', redo);
+  document.getElementById('btn-save').addEventListener('click', function () {
+    toast('原型演示：保存将提交整图布局并触发后端沿桥架重算线缆长度', 'info');
+  });
+  ['select', 'tray', 'wall', 'erase'].forEach(function (m) {
+    document.getElementById('mode-' + m).addEventListener('click', function () { setMode(m === 'select' ? 'select' : m + '-pen'); });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+    var k = e.key.toLowerCase();
+    if (k === 'v') setMode('select');
+    else if (k === 't') setMode('tray-pen');
+    else if (k === 'w') setMode('wall-pen');
+    else if (k === 'e') setMode('erase');
+    else if (k === 'escape') {
+      if (state.pen) { state.pen = null; renderSvg(); }
+      else if (state.selection) { state.selection = null; renderAll(); }
+    } else if (k === 'delete' || k === 'backspace') {
+      if (state.selection && state.selection !== 'cable') {
+        var o = byId(state.selection);
+        if (o) {
+          pushUndo();
+          state.objects = state.objects.filter(function (x) { return x.id !== o.id; });
+          state.selection = null;
+          renderAll();
+          toast(KIND[o.kind].name + '已删除' + (o.kind === 'tray' ? '，线缆已切换为估算路由' : ''), 'success');
+        }
+      }
+    }
+  });
+
+  window.addEventListener('resize', function () { drawRulers(); });
+
+  renderAll();
+  fitZoom(true);
+})();
+</script>
+</body>
+</html>

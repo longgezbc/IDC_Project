@@ -1,0 +1,66 @@
+/**
+ * uni-app 内置常用样式变量
+ * 同时作为本项目主题变量定义
+ */
+
+/* ===== 主题色 ===== */
+$uni-color-primary: #1890FF;
+$uni-color-success: #52C41A;
+$uni-color-warning: #FAAD14;
+$uni-color-error: #FF4D4F;
+
+/* 主色派生 */
+$primary-light: #E6F7FF;
+$primary-dark: #096DD9;
+
+/* ===== 文字颜色 ===== */
+$uni-text-color: #303133;
+$uni-text-color-inverse: #FFFFFF;
+$uni-text-color-grey: #5C6370;
+$uni-text-color-placeholder: #767E8A;
+$uni-text-color-disable: #767E8A;
+$uni-text-color-secondary: #606266;
+
+/* ===== 背景颜色 ===== */
+$uni-bg-color: #FFFFFF;
+$uni-bg-color-grey: #F5F7FA;
+$uni-bg-color-hover: #F1F1F1;
+$uni-bg-color-mask: rgba(0, 0, 0, 0.45);
+
+/* ===== 边框颜色 ===== */
+$uni-border-color: #EBEEF5;
+
+/* ===== 文字尺寸 ===== */
+$uni-font-size-sm: 24rpx;
+$uni-font-size-base: 28rpx;
+$uni-font-size-lg: 32rpx;
+
+/* ===== 图片尺寸 ===== */
+$uni-img-size-sm: 40rpx;
+$uni-img-size-base: 52rpx;
+$uni-img-size-lg: 80rpx;
+
+/* ===== 圆角 ===== */
+$uni-border-radius-sm: 4rpx;
+$uni-border-radius-base: 8rpx;
+$uni-border-radius-lg: 16rpx;
+$uni-border-radius-circle: 50%;
+
+/* ===== 间距 ===== */
+$uni-spacing-row-sm: 10rpx;
+$uni-spacing-row-base: 20rpx;
+$uni-spacing-row-lg: 30rpx;
+$uni-spacing-col-sm: 8rpx;
+$uni-spacing-col-base: 16rpx;
+$uni-spacing-col-lg: 24rpx;
+
+/* ===== 透明度 ===== */
+$uni-opacity-disabled: 0.5;
+
+/* ===== 文章场景相关 ===== */
+$uni-color-title: #303133;
+$uni-font-size-title: 34rpx;
+$uni-color-subtitle: #606266;
+$uni-font-size-subtitle: 30rpx;
+$uni-color-paragraph: #606266;
+$uni-font-size-paragraph: 28rpx;

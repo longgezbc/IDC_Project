@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizDocumentTagRelationMapper">
+
+    <!-- 批量插入文档标签关联：单条 INSERT ... VALUES (...),(...) 配合 <foreach> 一次写入多条，
+         避免循环单条插入的多次数据库往返。 -->
+    <insert id="batchInsert">
+        INSERT INTO biz_document_tag_relation (document_id, tag_id) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.documentId}, #{item.tagId})
+        </foreach>
+    </insert>
+
+</mapper>

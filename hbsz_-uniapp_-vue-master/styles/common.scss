@@ -1,0 +1,208 @@
+/**
+ * 公共样式规范
+ *
+ * 抽取各页面重复定义的卡片/标签/骨架屏/空状态/进度条/动画等公共样式，
+ * 统一字体、间距、圆角规范，并提供触摸反馈与 iPhone X 安全区适配。
+ * 各页面在 <style lang="scss" scoped> 顶部通过 @import '@/styles/common.scss'; 引入。
+ *
+ * 依赖：uni.scss 中已定义的 $uni-color-* / $uni-text-color-* 等变量。
+ */
+
+/* ===== 字体规范 ===== */
+$font-xs: 22rpx;      // 极小（标签、辅助文字）
+$font-sm: 24rpx;      // 小（次要文字、meta）
+$font-base: 28rpx;    // 基准（正文）
+$font-md: 30rpx;      // 中（卡片标题）
+$font-lg: 32rpx;      // 大（项目名）
+$font-xl: 38rpx;      // 特大（页面主标题）
+$font-xxl: 44rpx;     // 超大（统计数据）
+
+/* ===== 间距规范 ===== */
+$space-xs: 8rpx;
+$space-sm: 16rpx;
+$space-md: 24rpx;
+$space-lg: 32rpx;
+$space-xl: 48rpx;
+
+/* ===== 圆角规范 ===== */
+$radius-sm: 8rpx;
+$radius-md: 12rpx;
+$radius-lg: 16rpx;
+$radius-xl: 24rpx;
+$radius-pill: 999rpx;
+
+/* ===== 阴影规范 ===== */
+$shadow-sm: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+
+/* ===== 卡片（基础容器） ===== */
+.uni-card {
+	background: #FFFFFF;
+	border-radius: $radius-lg;
+	padding: $space-md;
+	margin-bottom: $space-sm;
+	box-shadow: $shadow-sm;
+}
+
+/* 卡片标题：与"查看全部"同行时使用 flex 布局 */
+.uni-card-title {
+	font-size: $font-md;
+	font-weight: 700;
+	color: $uni-text-color;
+	margin-bottom: $space-sm;
+}
+.uni-card-title-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: $space-sm;
+}
+.uni-card-more {
+	font-size: $font-sm;
+	color: $uni-color-primary;
+}
+
+/* ===== 标签 Tag ===== */
+.uni-tag {
+	display: inline-flex;
+	align-items: center;
+	padding: 4rpx 14rpx;
+	border-radius: $radius-sm;
+	font-size: $font-xs;
+	line-height: 1.6;
+	flex-shrink: 0;
+}
+.uni-tag-milestone { background: #FFF7E6; color: #D48806; }
+.uni-tag-key { background: #FFF1F0; color: $uni-color-error; }
+.uni-tag-archived { background: rgba(0, 0, 0, 0.25); color: #FFFFFF; }
+
+/* ===== 进度条 ===== */
+.uni-progress-bar {
+	flex: 1;
+	height: 10rpx;
+	background: $uni-border-color;
+	border-radius: $radius-sm;
+	overflow: hidden;
+}
+.uni-progress-inner {
+	height: 100%;
+	background: linear-gradient(90deg, $uni-color-primary, $uni-color-success);
+	border-radius: $radius-sm;
+	transition: width 0.3s ease;
+}
+.uni-progress-text {
+	font-size: $font-sm;
+	color: $uni-color-primary;
+	font-weight: 600;
+	min-width: 60rpx;
+	text-align: right;
+}
+
+/* ===== 骨架屏 ===== */
+.uni-skeleton {
+	background: linear-gradient(90deg, #F2F4F7 25%, #E6E8EB 37%, #F2F4F7 63%);
+	background-size: 400% 100%;
+	animation: uni-skeleton-loading 1.4s ease infinite;
+	border-radius: $radius-sm;
+}
+.uni-skeleton-line {
+	height: 80rpx;
+	margin: $space-sm 0;
+	@extend .uni-skeleton;
+}
+.uni-skeleton-block {
+	height: 200rpx;
+	margin-bottom: $space-sm;
+	border-radius: $radius-lg;
+	@extend .uni-skeleton;
+}
+
+/* 全局骨架动画 keyframes（仅定义一次，避免各页面重复） */
+@keyframes uni-skeleton-loading {
+	0% { background-position: 100% 50%; }
+	100% { background-position: 0 50%; }
+}
+
+/* 旋转加载动画（用于自定义 loading 图标） */
+@keyframes uni-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ===== 空状态 ===== */
+.uni-empty {
+	padding: 120rpx 40rpx;
+	text-align: center;
+	color: $uni-text-color-grey;
+	font-size: $font-sm;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.uni-empty-icon {
+	width: 96rpx;
+	height: 96rpx;
+	margin-bottom: $space-md;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #DCDFE6;
+}
+.uni-empty-text {
+	font-size: $font-sm;
+	color: $uni-text-color-grey;
+}
+
+/* ===== 加载更多 ===== */
+.uni-load-more {
+	text-align: center;
+	color: $uni-text-color-placeholder;
+	font-size: $font-sm;
+	padding: $space-md 0;
+}
+
+/* ===== 底部安全区占位（iPhone X 适配） ===== */
+.uni-bottom-safe {
+	height: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+/* ===== 触摸反馈：用于卡片/按钮等可点击元素 ===== */
+/* 在元素上添加 hover-class="uni-hover" 即可启用按下反馈 */
+.uni-hover {
+	background-color: #F5F7FA !important;
+	transform: scale(0.98);
+	opacity: 0.85;
+	transition: all 0.15s ease;
+}
+
+/* 通用按钮样式 */
+.uni-btn-primary {
+	background: linear-gradient(135deg, $uni-color-primary 0%, $primary-dark 100%);
+	color: #FFFFFF;
+	border-radius: $radius-md;
+	font-size: $font-lg;
+	font-weight: 600;
+	border: none;
+	transition: opacity 0.2s;
+	&::after { border: none; }
+	&[disabled] {
+		background: #B3D9FF;
+		color: #5C6370;
+	}
+}
+
+/* 文本省略（单行） */
+.uni-ellipsis {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* 文本省略（两行） */
+.uni-ellipsis-2 {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}

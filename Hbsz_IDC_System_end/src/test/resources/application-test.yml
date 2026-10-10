@@ -1,0 +1,102 @@
+# ========================================
+# 测试环境配置 (Test Profile)
+# ========================================
+# 目标：让 @SpringBootTest 上下文冒烟测试无需真实 MySQL/Redis/Flyway 即可独立运行。
+#
+# 设计取舍（为什么这样配置）：
+#   1. 数据源用 H2 内存库（MODE=MySQL）：验证 Druid 连接池、MyBatis-Plus Mapper
+#      装配、事务管理器等全部 Bean 协作正常；
+#   2. Flyway 关闭：生产迁移脚本为 MySQL 方言（PREPARE/EXECUTE + information_schema
+#      存在性检查），H2 无法执行。schema 验证属于迁移测试职责，不是上下文冒烟测试职责；
+#   3. Redis 保持惰性连接：Lettuce 首次命令才建连，@Cacheable 运行期才触发，
+#      上下文加载阶段无需真实 Redis；
+#   4. Druid filters 去掉 wall：SQL 防火墙按方言解析语句，对 H2 兼容性差且拖慢启动。
+#      仅保留 stat（或全部关闭）即可满足冒烟目标。
+
+spring:
+  # 随机端口，避免本地 8080 被占用导致测试失败
+  main:
+    banner-mode: off
+  flyway:
+    enabled: false
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: org.h2.Driver
+    # MODE=MySQL：MySQL 兼容模式；DATABASE_TO_LOWER=TRUE：标识符统一小写（贴近 MySQL Linux 行为）
+    # DB_CLOSE_DELAY=-1：JVM 存活期内保持库不销毁；DEFAULT_NULL_ORDERING=HIGH：NULL 排序贴近 MySQL
+    url: jdbc:h2:mem:hbsz_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    druid:
+      initial-size: 2
+      min-idle: 2
+      max-active: 10
+      max-wait: 2000
+      validation-query: SELECT 1
+      # 冒烟测试无长连接空闲场景；且 H2 方言下 Druid 的 ValidConnectionChecker
+      # 不会自动创建，保留 test-while-idle 会在 init 时打 ERROR 日志
+      test-while-idle: false
+      # 去掉 wall（SQL 防火墙），保留 stat 足够冒烟测试使用
+      filters: stat
+      # 测试无需监控页面与泄漏检测，全部关闭加速启动
+      remove-abandoned: false
+      log-abandoned: false
+      keep-alive: false
+      stat-view-servlet:
+        enabled: false
+      web-stat-filter:
+        enabled: false
+
+  # Redis：仅占位，Lettuce 惰性连接，上下文加载阶段不会真正建连
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 2000ms
+
+  # 缓存管理器仍指向 redis（运行期才连接）；测试方法不触发 @Cacheable
+  cache:
+    type: redis
+
+  # 关闭 devtools restart（测试环境不热重载）
+  devtools:
+    restart:
+      enabled: false
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+# JWT：主配置中 jwt.secret 无默认值（强制生产注入），测试必须显式提供
+jwt:
+  secret: hbsz_test_secret_for_spring_context_smoke_test_only_32chars
+  expiration: 1800000
+  refresh-expiration: 604800000
+
+# 文件目录指向 target 下，避免测试在项目根目录产生 uploads/exports 垃圾目录
+hbsz:
+  file:
+    upload-dir: ./target/test-uploads
+  export:
+    path: ./target/test-exports
+  # 显式来源，避免 dev 默认值 * 触发 CORS/WebSocket 安全告警噪音
+  cors:
+    allowed-origins: http://localhost:5173
+
+# 服务器配置：随机端口
+server:
+  port: 0
+  servlet:
+    context-path: /api
+
+# 测试降噪：Spring 框架 INFO 日志输出过多
+logging:
+  level:
+    root: WARN
+    com.example.hbsz_idc_system_end: INFO
+    org.springframework: WARN
+    org.apache.ibatis: WARN
+    com.alibaba.druid: WARN

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizProjectAuthRequestMapper">
+
+    <!-- 分页查询项目授权申请列表（带申请人/目标工程师/项目名/审批人姓名等冗余字段） -->
+    <select id="selectAuthRequestPage" resultType="com.example.hbsz_idc_system_end.dto.AuthRequestVO">
+        SELECT
+            r.id,
+            r.project_id            AS projectId,
+            p.name                 AS projectName,
+            r.applicant_id         AS applicantId,
+            ap.name                AS applicantName,
+            r.target_engineer_id   AS targetEngineerId,
+            te.name                AS targetEngineerName,
+            r.scope,
+            r.expire_at            AS expireAt,
+            r.reason,
+            r.status,
+            r.approver_id          AS approverId,
+            av.name                AS approverName,
+            r.approved_at          AS approvedAt,
+            r.comment,
+            r.created_at           AS createdAt,
+            r.updated_at           AS updatedAt
+        FROM biz_project_auth_request r
+        LEFT JOIN biz_project p ON r.project_id = p.id
+        LEFT JOIN sys_user ap ON r.applicant_id = ap.id
+        LEFT JOIN sys_user te ON r.target_engineer_id = te.id
+        LEFT JOIN sys_user av ON r.approver_id = av.id
+        <where>
+            <if test="query.status != null and query.status != ''">
+                AND r.status = #{query.status}
+            </if>
+            <if test="query.projectId != null">
+                AND r.project_id = #{query.projectId}
+            </if>
+            <if test="query.applicantId != null">
+                AND r.applicant_id = #{query.applicantId}
+            </if>
+        </where>
+        ORDER BY r.created_at DESC, r.id DESC
+    </select>
+
+</mapper>

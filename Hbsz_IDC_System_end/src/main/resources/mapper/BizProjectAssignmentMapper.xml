@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizProjectAssignmentMapper">
+
+    <!-- 查询项目下的有效授权工程师列表（带工程师姓名、授权人姓名等冗余字段） -->
+    <select id="selectAssignmentsByProject" resultType="com.example.hbsz_idc_system_end.dto.ProjectAssignmentVO">
+        SELECT
+            pa.id,
+            pa.project_id         AS projectId,
+            pa.engineer_id        AS engineerId,
+            eu.name               AS engineerName,
+            eu.username           AS engineerUsername,
+            eu.phone              AS engineerPhone,
+            pa.assigned_by        AS assignedBy,
+            au.name               AS assignedByName,
+            pa.assigned_at         AS assignedAt,
+            pa.is_active          AS isActive,
+            pa.remark,
+            pa.permission_scope   AS permissionScope,
+            pa.expire_at          AS expireAt,
+            pa.revoke_reason      AS revokeReason,
+            pa.revoked_at         AS revokedAt
+        FROM biz_project_assignment pa
+        INNER JOIN sys_user eu ON pa.engineer_id = eu.id
+        INNER JOIN sys_user au ON pa.assigned_by = au.id
+        WHERE pa.project_id = #{projectId}
+          AND pa.is_active = 1
+        ORDER BY pa.assigned_at DESC, pa.id DESC
+    </select>
+
+    <!-- 分页查询项目授权关系列表（带工程师姓名、项目名、授权人姓名等冗余字段） -->
+    <select id="selectAssignmentPage" resultType="com.example.hbsz_idc_system_end.dto.AssignmentVO">
+        SELECT
+            pa.id,
+            pa.project_id         AS projectId,
+            p.name                AS projectName,
+            pa.engineer_id        AS engineerId,
+            eu.name               AS engineerName,
+            eu.username           AS engineerUsername,
+            eu.phone              AS engineerPhone,
+            pa.assigned_by        AS assignedBy,
+            au.name               AS assignedByName,
+            pa.assigned_at         AS assignedAt,
+            pa.is_active          AS isActive,
+            pa.remark,
+            pa.permission_scope   AS permissionScope,
+            pa.expire_at          AS expireAt,
+            pa.revoke_reason      AS revokeReason,
+            pa.revoked_at         AS revokedAt
+        FROM biz_project_assignment pa
+        LEFT JOIN biz_project p ON pa.project_id = p.id
+        LEFT JOIN sys_user eu ON pa.engineer_id = eu.id
+        LEFT JOIN sys_user au ON pa.assigned_by = au.id
+        <where>
+            <if test="query.projectId != null">
+                AND pa.project_id = #{query.projectId}
+            </if>
+            <if test="query.engineerId != null">
+                AND pa.engineer_id = #{query.engineerId}
+            </if>
+            <if test="query.isActive != null">
+                AND pa.is_active = #{query.isActive}
+            </if>
+            <if test="query.expireSoon != null and query.expireSoon == true">
+                AND pa.is_active = 1
+                AND pa.expire_at IS NOT NULL
+                AND pa.expire_at &lt; DATE_ADD(NOW(), INTERVAL 7 DAY)
+            </if>
+        </where>
+        ORDER BY pa.assigned_at DESC, pa.id DESC
+    </select>
+
+</mapper>

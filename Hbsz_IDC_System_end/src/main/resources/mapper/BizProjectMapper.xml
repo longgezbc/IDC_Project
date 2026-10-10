@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizProjectMapper">
+
+    <!-- 项目VO结果映射 -->
+    <resultMap id="ProjectVOMap" type="com.example.hbsz_idc_system_end.dto.ProjectVO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="project_code"/>
+        <result property="status" column="status"/>
+        <result property="priority" column="priority"/>
+        <result property="type" column="project_type"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="customerName" column="customer_name"/>
+        <result property="customerContact" column="contact_person"/>
+        <result property="customerPhone" column="contact_phone"/>
+        <result property="customerEmail" column="contact_email"/>
+        <result property="manager" column="manager_name"/>
+        <result property="managerId" column="manager_id"/>
+        <result property="managerLinkedName" column="manager_linked_name"/>
+        <result property="managerLinkStatus" column="manager_link_status"/>
+        <result property="managerPhone" column="manager_phone"/>
+        <result property="address" column="address"/>
+        <result property="region" column="region"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="contractAmount" column="contract_amount"/>
+        <result property="budget" column="budget"/>
+        <result property="progress" column="progress"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="archived" column="is_archived"/>
+    </resultMap>
+
+    <!-- 分页查询项目列表：主表 biz_project LEFT JOIN biz_customer 回填客户信息，
+         通过 <where>/<if> 拼装是否归档、关键字、状态、类型、优先级、负责人、开始日期区间等动态条件。
+         性能考虑：建议 customer_id 及排序列 created_at 建索引；关键字/负责人前后模糊匹配走不了索引，属可接受的范围过滤。 -->
+    <select id="selectProjectPage" resultMap="ProjectVOMap">
+        SELECT p.id, p.project_code, p.name, p.status, p.priority, p.project_type,
+               p.customer_id, c.name AS customer_name, c.contact_person, c.contact_phone, c.contact_email,
+               p.manager_name, p.manager_phone, p.address, p.region, p.start_date, p.end_date,
+               p.contract_amount, p.budget, p.progress, p.description,
+               DATE_FORMAT(p.created_at, '%Y-%m-%d') AS created_at,
+               DATE_FORMAT(p.updated_at, '%Y-%m-%d') AS updated_at,
+               p.is_archived
+        FROM biz_project p
+        LEFT JOIN biz_customer c ON p.customer_id = c.id
+        <where>
+            <if test="query.archived != null">
+                AND p.is_archived = <choose>
+                    <when test="query.archived == true">1</when>
+                    <otherwise>0</otherwise>
+                </choose>
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                AND (p.name LIKE CONCAT('%', #{query.keyword}, '%')
+                  OR p.project_code LIKE CONCAT('%', #{query.keyword}, '%'))
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND p.status = #{query.status}
+            </if>
+            <if test="query.type != null and query.type != ''">
+                AND p.project_type = #{query.type}
+            </if>
+            <if test="query.priority != null and query.priority != ''">
+                AND p.priority = #{query.priority}
+            </if>
+            <if test="query.manager != null and query.manager != ''">
+                AND p.manager_name LIKE CONCAT('%', #{query.manager}, '%')
+            </if>
+            <if test="query.startDateBegin != null and query.startDateBegin != ''">
+                AND p.start_date &gt;= #{query.startDateBegin}
+            </if>
+            <if test="query.startDateEnd != null and query.startDateEnd != ''">
+                AND p.start_date &lt;= #{query.startDateEnd}
+            </if>
+            <if test="query.visibleProjectIds != null and query.visibleProjectIds.size() == 0">
+                AND 1 = 0
+            </if>
+            <if test="query.visibleProjectIds != null and query.visibleProjectIds.size() > 0">
+                AND p.id IN
+                <foreach collection="query.visibleProjectIds" item="pid" open="(" separator="," close=")">
+                    #{pid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY p.created_at DESC, p.id DESC
+    </select>
+
+    <!-- 查询项目详情（联查负责人关联用户，判定 manager_name 与 manager_id 是否分叉：
+         mismatch=审批归属分叉 / unlinked=通知断链 / disabled=关联用户已停用 / missing=关联用户不存在。
+         分叉判定单点收敛在 SQL，前端只做展示（2026-08-24 行动项#4）） -->
+    <select id="selectProjectDetailById" resultMap="ProjectVOMap">
+        SELECT p.id, p.project_code, p.name, p.status, p.priority, p.project_type,
+               p.customer_id, c.name AS customer_name, c.contact_person, c.contact_phone, c.contact_email,
+               p.manager_name, p.manager_phone, p.address, p.region, p.start_date, p.end_date,
+               p.contract_amount, p.budget, p.progress, p.description,
+               DATE_FORMAT(p.created_at, '%Y-%m-%d') AS created_at,
+               DATE_FORMAT(p.updated_at, '%Y-%m-%d') AS updated_at,
+               p.is_archived,
+               p.manager_id,
+               u.name AS manager_linked_name,
+               CASE
+                   WHEN p.manager_id IS NULL THEN 'unlinked'
+                   WHEN u.id IS NULL THEN 'missing'
+                   WHEN u.status &lt;&gt; 1 THEN 'disabled'
+                   WHEN u.name &lt;&gt; p.manager_name THEN 'mismatch'
+                   ELSE 'ok'
+               END AS manager_link_status
+        FROM biz_project p
+        LEFT JOIN biz_customer c ON p.customer_id = c.id
+        LEFT JOIN sys_user u ON p.manager_id = u.id
+        WHERE p.id = #{id}
+    </select>
+
+    <!-- 查询归档项目列表 -->
+    <select id="selectArchivedProjectPage" resultMap="ProjectVOMap">
+        SELECT p.id, p.project_code, p.name, p.status, p.priority, p.project_type,
+               p.customer_id, c.name AS customer_name, c.contact_person, c.contact_phone, c.contact_email,
+               p.manager_name, p.manager_phone, p.address, p.region, p.start_date, p.end_date,
+               p.contract_amount, p.budget, p.progress, p.description,
+               DATE_FORMAT(p.created_at, '%Y-%m-%d') AS created_at,
+               DATE_FORMAT(p.updated_at, '%Y-%m-%d') AS updated_at,
+               p.is_archived
+        FROM biz_project p
+        LEFT JOIN biz_customer c ON p.customer_id = c.id
+        WHERE p.is_archived = 1
+        <if test="keyword != null and keyword != ''">
+            AND (p.name LIKE CONCAT('%', #{keyword}, '%')
+              OR p.project_code LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY p.archive_date DESC, p.id DESC
+    </select>
+
+    <!-- 统计各状态项目数量 -->
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT status AS name, COUNT(*) AS value
+        FROM biz_project
+        WHERE is_archived = 0
+        GROUP BY status
+    </select>
+
+    <!-- 统计各类型项目数量 -->
+    <select id="countByType" resultType="java.util.Map">
+        SELECT project_type AS name, COUNT(*) AS value
+        FROM biz_project
+        WHERE is_archived = 0
+        GROUP BY project_type
+    </select>
+
+    <!-- 统计各优先级项目数量 -->
+    <select id="countByPriority" resultType="java.util.Map">
+        SELECT priority AS name, COUNT(*) AS value
+        FROM biz_project
+        WHERE is_archived = 0
+        GROUP BY priority
+    </select>
+
+    <!-- 按月统计项目数量趋势（新增数 + 完成数）：按 DATE_FORMAT(created_at,'%Y-%m') 分组，
+         用 SUM(CASE WHEN status='已完成') 聚合当月完成数。
+         性能考虑：WHERE YEAR(created_at)=? 为函数条件，无法命中 created_at 索引，数据量大时可改写为 [年初, 次年初) 区间比较以走索引。 -->
+    <select id="countByMonth" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(created_at, '%Y-%m') AS month,
+            COUNT(*) AS `newCount`,
+            SUM(CASE WHEN status = '已完成' THEN 1 ELSE 0 END) AS `completedCount`
+        FROM biz_project
+        WHERE YEAR(created_at) = #{year}
+        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 统计合同金额 -->
+    <select id="sumContractAmount" resultType="java.util.Map">
+        SELECT
+            IFNULL(SUM(contract_amount), 0) AS totalAmount,
+            IFNULL(SUM(CASE WHEN status = '进行中' THEN contract_amount ELSE 0 END), 0) AS activeAmount,
+            IFNULL(SUM(CASE WHEN status = '已完成' THEN contract_amount ELSE 0 END), 0) AS completedAmount,
+            IFNULL(SUM(budget), 0) AS totalBudget
+        FROM biz_project
+        WHERE is_archived = 0
+    </select>
+
+    <!-- 概览统计：用单条带 CASE WHEN 的聚合查询一次算出总数/进行中/已完成/归档数、合同总额与进行中项目平均进度，
+         替代"全表加载后在应用层统计"，显著降低内存与网络开销。 -->
+    <select id="selectOverviewStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalProjects,
+            SUM(CASE WHEN status = '进行中' AND (is_archived = 0 OR is_archived IS NULL) THEN 1 ELSE 0 END) AS activeProjects,
+            SUM(CASE WHEN status = '已完成' AND (is_archived = 0 OR is_archived IS NULL) THEN 1 ELSE 0 END) AS completedProjects,
+            SUM(CASE WHEN is_archived = 1 THEN 1 ELSE 0 END) AS archivedProjects,
+            IFNULL(SUM(contract_amount), 0) AS totalContractAmount,
+            IFNULL(ROUND(AVG(CASE WHEN status = '进行中' AND (is_archived = 0 OR is_archived IS NULL) THEN progress ELSE NULL END)), 0) AS avgProgress
+        FROM biz_project
+    </select>
+
+    <!-- 归档统计：固定过滤 is_archived=1，用单条带 CASE WHEN 的聚合查询一次算出归档总数、合同总额、当年归档数与当月归档数，替代全表加载。 -->
+    <select id="selectArchiveStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalCount,
+            IFNULL(SUM(contract_amount), 0) AS totalContractAmount,
+            SUM(CASE WHEN YEAR(archive_date) = #{currentYear} THEN 1 ELSE 0 END) AS currentYearCount,
+            SUM(CASE WHEN YEAR(archive_date) = #{currentYear} AND MONTH(archive_date) = #{currentMonth} THEN 1 ELSE 0 END) AS currentMonthCount
+        FROM biz_project
+        WHERE is_archived = 1
+    </select>
+
+    <!-- 【修复M10】按客户ID批量统计关联项目数，使用 GROUP BY 一次聚合，
+         替代原加载全部项目实体后内存 for 循环计数。
+         biz_project 表无逻辑删除字段，项目删除为物理删除，无需 deleted 过滤。 -->
+    <select id="countByCustomerIds" resultType="java.util.Map">
+        SELECT customer_id AS customerId, COUNT(*) AS cnt
+        FROM biz_project
+        WHERE customer_id IN
+        <foreach collection="customerIds" item="cid" open="(" separator="," close=")">
+            #{cid}
+        </foreach>
+        GROUP BY customer_id
+    </select>
+
+</mapper>

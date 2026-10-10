@@ -1,0 +1,144 @@
+# ========================================
+# 开发环境配置 (Development Profile)
+# ========================================
+server:
+  port: 8080
+  # Tomcat 线程池显式配置
+  # 优化说明：原配置未显式指定 tomcat.threads，使用默认值（max=200, min-spare=10, accept-count=100）
+  # 默认值对开发环境够用，但生产环境容量规划不清晰。显式配置便于后续压测调优。
+  # threads.max 与 druid.max-active 比例建议 4:1，避免所有线程同时等连接
+  tomcat:
+    threads:
+      max: 200           # 最大工作线程数（默认 200）
+      min-spare: 20      # 最小空闲线程数（默认 10），适当提高减少冷启动
+    accept-count: 100    # 接收队列长度（默认 100），满后拒绝连接
+    max-connections: 8192  # 最大连接数（默认 8192），与系统 fd 上限匹配
+    connection-timeout: 20s  # 连接超时（默认 20s）
+
+spring:
+  # 数据源配置 (Druid 连接池)
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:3306/hbsz_idc_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    druid:
+      initial-size: 5
+      min-idle: 5
+      # 优化：max-active 从 20 调整为 30
+      # 原值偏低，配合 Tomcat 200 线程，高并发时连接等待严重
+      # 30 配合 200 线程比例约 1:6.7，多数业务 IO 等待下可接受
+      max-active: 30
+      # 优化：max-wait 从 60000ms 降为 5000ms
+      # 原值 60s 过长，连接池耗尽时线程长时间阻塞，拖垮整个服务
+      # 5s 快速失败，让上游及时感知异常并返回友好提示
+      max-wait: 5000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=1000
+      # 连接泄漏检测配置
+      remove-abandoned: true
+      remove-abandoned-timeout: 300
+      log-abandoned: true
+      # 物理连接管理
+      phy-timeout-millis: 1800000
+      phy-max-use-count: 10000
+      keep-alive: true
+      # Druid 监控页面
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: ${DRUID_USERNAME:admin}
+        login-password: ${DRUID_PASSWORD:admin123}
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+
+  # Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  # 开发环境热部署
+  devtools:
+    restart:
+      enabled: true
+
+  # Redis 缓存配置 (Spring Boot 3.x 使用 spring.data.redis)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DB:0}
+      password: ${REDIS_PASSWORD:123456}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          # 优化：max-wait 从 -1ms（无限等待）改为 2000ms
+          # 无限等待会导致请求堆积无法及时失败，影响熔断器判断
+          # 2s 等待足够覆盖短暂 Redis 抖动，又能在 Redis 故障时快速失败
+          max-wait: 2000ms
+        shutdown-timeout: 100ms
+
+  # Spring Cache 缓存配置
+  cache:
+    type: redis
+    redis:
+      use-prefix: true
+      cache-null-values: false
+      time-to-live: 30m
+      key-prefix: "hbsz:"
+      use-key-prefix: true
+
+# 日志级别
+logging:
+  level:
+    root: INFO
+    com.example.hbsz_idc_system_end: DEBUG
+    com.example.hbsz_idc_system_end.mapper: DEBUG
+    org.springframework.web: INFO
+
+# MyBatis-Plus 开发环境打印 SQL
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT 配置
+# 安全说明：
+#   - 开发环境：提供包含警告字样的默认密钥，开箱即用，避免每次启动都要设置环境变量
+#   - 生产环境：application-prod.yml 中 jwt.secret=${JWT_SECRET} 无默认值，强制要求通过环境变量注入
+#   - 如需自定义开发密钥：在 IDE 运行配置或系统环境变量中设置 JWT_SECRET=xxx（任意 32+ 字符随机串）
+# 安全修复 #41：access token 有效期从 24h 缩短至 30min，降低 token 泄露风险窗口；
+# 新增 refresh-expiration 7 天作为刷新 token 有效期
+jwt:
+  # 默认值含 "dev/change_in_production/DO_NOT_USE_IN_PROD" 警告字样，避免被误用为生产密钥
+  secret: ${JWT_SECRET:hbsz_dev_secret_change_in_production_DO_NOT_USE_IN_PROD_2026}
+  expiration: ${JWT_EXPIRATION:1800000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+# 是否开启 Swagger
+swagger:
+  enabled: true
+
+# CORS 跨域配置（生产环境通过环境变量指定具体域名）
+hbsz:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  # 安全配置
+  security:
+    # 受信代理 IP 白名单（逗号分隔），为空表示不信任任何代理，限流直接使用 remoteAddr
+    # 开发环境一般无反向代理，保持为空；若通过 Nginx 等代理访问，需配置代理 IP
+    trusted-proxies: ${TRUSTED_PROXIES:}

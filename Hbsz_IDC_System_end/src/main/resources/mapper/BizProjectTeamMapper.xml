@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.BizProjectTeamMapper">
+
+    <!-- 分页查询项目组成员列表（带用户姓名、电话、岗位等冗余字段） -->
+    <select id="selectTeamMemberPage" resultType="com.example.hbsz_idc_system_end.dto.TeamMemberVO">
+        SELECT
+            t.id,
+            t.project_id            AS projectId,
+            t.user_id               AS userId,
+            t.role_in_team          AS roleInTeam,
+            t.joined_at             AS joinedAt,
+            t.left_at               AS leftAt,
+            t.is_active             AS isActive,
+            t.remark,
+            u.name                  AS userName,
+            u.username              AS userUsername,
+            u.phone                 AS userPhone,
+            p.name                  AS positionName,
+            proj.name               AS projectName
+        FROM biz_project_team t
+        INNER JOIN sys_user u ON t.user_id = u.id
+        LEFT JOIN sys_position p ON u.position_id = p.id
+        LEFT JOIN biz_project proj ON t.project_id = proj.id
+        <where>
+            <if test="query.projectId != null">
+                AND t.project_id = #{query.projectId}
+            </if>
+            <if test="query.userId != null">
+                AND t.user_id = #{query.userId}
+            </if>
+            <if test="query.roleInTeam != null and query.roleInTeam != ''">
+                AND t.role_in_team = #{query.roleInTeam}
+            </if>
+            <if test="query.isActive != null">
+                AND t.is_active = #{query.isActive}
+            </if>
+        </where>
+        ORDER BY t.is_active DESC,
+                 CASE t.role_in_team WHEN 'leader' THEN 0 WHEN 'member' THEN 1 ELSE 2 END,
+                 t.joined_at ASC,
+                 t.id ASC
+    </select>
+
+    <!-- 【修复M9】按 id 精确查询成员 VO，替代原 pageSize=100 分页后内存 filter 的低效且可能丢数据的实现 -->
+    <select id="selectTeamMemberById" resultType="com.example.hbsz_idc_system_end.dto.TeamMemberVO">
+        SELECT
+            t.id,
+            t.project_id            AS projectId,
+            t.user_id               AS userId,
+            t.role_in_team          AS roleInTeam,
+            t.joined_at             AS joinedAt,
+            t.left_at               AS leftAt,
+            t.is_active             AS isActive,
+            t.remark,
+            u.name                  AS userName,
+            u.username              AS userUsername,
+            u.phone                 AS userPhone,
+            p.name                  AS positionName,
+            proj.name               AS projectName
+        FROM biz_project_team t
+        INNER JOIN sys_user u ON t.user_id = u.id
+        LEFT JOIN sys_position p ON u.position_id = p.id
+        LEFT JOIN biz_project proj ON t.project_id = proj.id
+        WHERE t.id = #{id}
+    </select>
+
+</mapper>

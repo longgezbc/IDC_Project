@@ -1,0 +1,37 @@
+# 根目录 .dockerignore（用于前端构建上下文）
+# 排除不需要的文件和目录，加速构建
+
+# 依赖与构建产物
+**/node_modules/
+**/dist/
+**/target/
+
+# 版本控制
+**/.git/
+**/.gitignore
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.iml
+
+# 日志与临时文件
+**/*.log
+**/logs/
+**/console.text
+**/error.text
+**/consolerror.text
+
+# 后端文件（前端构建不需要）
+Hbsz_IDC_System_end/
+hbsz_-uniapp_-vue-master/
+
+# Docker 文件自身
+docker-compose.yml
+.env.docker
+
+# 数据库与文档
+*.sql
+*.zip
+*.xlsx
+api_check.json

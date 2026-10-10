@@ -1,0 +1,165 @@
+# ========================================
+# 生产环境配置 (Production Profile)
+# ========================================
+server:
+  port: 8080
+  # Tomcat 线程池显式配置
+  # 优化说明：2G 服务器降低线程数，与 druid.max-active=15 保持 4:1 比例
+  tomcat:
+    threads:
+      max: 60            # 最大工作线程数（原 200，2G 服务器降为 60）
+      min-spare: 10      # 最小空闲线程数
+    accept-count: 50     # 接收队列长度
+    max-connections: 8192  # 最大连接数
+    connection-timeout: 20s  # 连接超时
+    # RemoteIpValve 受信代理白名单（正则，匹配 TCP 直连对端与 XFF 链中的代理跳转）
+    # 仅信任 docker bridge 网段（compose 网络内 nginx 容器经 NAT 的出口 172.18.0.1
+    # 及容器 IP）与本机回环；其它来源一律不采信 X-Forwarded-* 链，防止外部直连伪造。
+    # 注意：此项为正则而非 CIDR；网段变更时需与 hbsz.security.trusted-proxies 同步修改。
+    remoteip:
+      internal-proxies: '172\.18\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|0:0:0:0:0:0:0:1|::1'
+
+spring:
+  # 数据源配置 - 生产环境通过环境变量注入
+  # 优化：2G 服务器降低连接池大小，减少内存占用和 MySQL 连接压力
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    druid:
+      # 2G 服务器优化：降低初始连接和最大连接数
+      # 原配置 initial-size=10, max-active=50 在 2G 服务器上过于激进
+      initial-size: 3
+      min-idle: 3
+      max-active: 15
+      # 优化：max-wait 从 60000ms 降为 5000ms，连接池耗尽时快速失败
+      max-wait: 5000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      filters: stat,wall
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=2000
+      # 连接泄漏检测配置（生产环境更严格）
+      remove-abandoned: true
+      remove-abandoned-timeout: 180
+      log-abandoned: true
+      # 物理连接管理
+      phy-timeout-millis: 1800000
+      phy-max-use-count: 10000
+      keep-alive: true
+      stat-view-servlet:
+        enabled: false
+      web-stat-filter:
+        enabled: true
+        url-pattern: /*
+        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+
+  # Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  # 关闭热部署
+  devtools:
+    restart:
+      enabled: false
+
+  # Redis 缓存配置 - 生产环境通过环境变量注入 (Spring Boot 3.x 使用 spring.data.redis)
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DB:0}
+      password: ${REDIS_PASSWORD}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 3000ms
+        shutdown-timeout: 100ms
+
+  # Spring Cache 缓存配置
+  cache:
+    type: redis
+    redis:
+      use-prefix: true
+      cache-null-values: false
+      time-to-live: 30m
+      key-prefix: "hbsz:"
+      use-key-prefix: true
+
+# 日志级别 - 生产环境仅记录 WARN 及以上
+logging:
+  level:
+    root: WARN
+    com.example.hbsz_idc_system_end: INFO
+    org.springframework.web: WARN
+
+# MyBatis-Plus - 生产环境不打印 SQL
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+# JWT 配置 - 生产环境必须通过环境变量注入，无默认值
+# 安全修复 #41：access token 有效期从 24h 缩短至 30min，降低 token 泄露风险窗口；
+# 新增 refresh-expiration 7 天作为刷新 token 有效期
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:1800000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+# CORS 跨域配置 - 安全：生产环境必须通过环境变量 CORS_ALLOWED_ORIGINS 指定白名单域名，禁止使用 *
+# 多个域名以逗号分隔，例如：https://hbsz.example.com,https://www.hbsz.example.com
+# 未设置环境变量时回退到下方显式默认域名（非 *），避免凭据跨域泄露风险
+hbsz:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://hbsz.example.com}
+  # 安全配置
+  security:
+    # 受信代理 IP 白名单（逗号分隔），为空表示不信任任何代理，限流直接使用 remoteAddr
+    # 生产环境若部署在 Nginx/负载均衡后，需通过环境变量 TRUSTED_PROXIES 配置代理 IP
+    # 例如：TRUSTED_PROXIES=10.0.0.1,10.0.0.2
+    trusted-proxies: ${TRUSTED_PROXIES:}
+
+# 生产环境关闭 Swagger
+swagger:
+  enabled: false
+
+knife4j:
+  enable: false
+  production: true
+
+# Spring Boot Actuator 监控端点配置
+# 安全：生产环境仅暴露 health 端点，避免 info/prometheus/metrics 端点
+# 在未认证情况下泄露运行时指标、线程堆栈、环境变量等敏感信息
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 30s

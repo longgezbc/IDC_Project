@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hbsz_idc_system_end.mapper.SysNotificationMapper">
+
+    <insert id="batchInsert">
+        INSERT INTO sys_notification (user_id, title, content, notify_type, biz_type, biz_id, priority, is_read, created_at) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.title}, #{item.content}, #{item.notifyType}, #{item.bizType}, #{item.bizId}, #{item.priority}, #{item.isRead}, #{item.createdAt})
+        </foreach>
+    </insert>
+
+</mapper>

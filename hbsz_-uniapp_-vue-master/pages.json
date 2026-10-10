@@ -1,0 +1,309 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^empty-state$": "@/components/empty-state/empty-state.vue",
+			"^load-more$": "@/components/load-more/load-more.vue",
+			"^status-tag$": "@/components/status-tag/status-tag.vue",
+			"^skeleton-card$": "@/components/skeleton-card/skeleton-card.vue",
+			"^search-bar$": "@/components/search-bar/search-bar.vue",
+			"^filter-bar$": "@/components/filter-bar/filter-bar.vue",
+			"^form-dialog$": "@/components/form-dialog/form-dialog.vue",
+			"^confirm-dialog$": "@/components/confirm-dialog/confirm-dialog.vue",
+			"^page-header$": "@/components/page-header/page-header.vue",
+			"^approval-flow-chart$": "@/components/approval-flow-chart.vue"
+		}
+	},
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "工作台",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/project/list",
+			"style": {
+				"navigationBarTitleText": "项目列表",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/document/list",
+			"style": {
+				"navigationBarTitleText": "项目资料",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/profile/profile",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/project/detail",
+			"style": {
+				"navigationBarTitleText": "项目详情"
+			}
+		},
+		{
+			"path": "pages/project/edit",
+			"style": {
+				"navigationBarTitleText": "项目编辑"
+			}
+		},
+		{
+			"path": "pages/progress/report",
+			"style": {
+				"navigationBarTitleText": "进度填报"
+			}
+		},
+		{
+			"path": "pages/progress/list",
+			"style": {
+				"navigationBarTitleText": "任务进度",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/progress/task-edit",
+			"style": {
+				"navigationBarTitleText": "任务编辑"
+			}
+		},
+		{
+			"path": "pages/document/preview",
+			"style": {
+				"navigationBarTitleText": "文档预览"
+			}
+		},
+		{
+			"path": "pages/document/upload",
+			"style": {
+				"navigationBarTitleText": "上传文档"
+			}
+		},
+		{
+			"path": "pages/my/tasks",
+			"style": {
+				"navigationBarTitleText": "我的任务",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/my/submissions",
+			"style": {
+				"navigationBarTitleText": "我的填报",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/progress/review",
+			"style": {
+				"navigationBarTitleText": "进度审核",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/pm/risk-board",
+			"style": {
+				"navigationBarTitleText": "风险预警看板",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/pm/project-auth",
+			"style": {
+				"navigationBarTitleText": "项目授权",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/customer/list",
+			"style": {
+				"navigationBarTitleText": "客户管理",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/customer/detail",
+			"style": {
+				"navigationBarTitleText": "客户详情"
+			}
+		},
+		{
+			"path": "pages/notification/list",
+			"style": {
+				"navigationBarTitleText": "站内通知",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/approval/flow",
+			"style": {
+				"navigationBarTitleText": "审批流程图",
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/profile/edit",
+			"style": {
+				"navigationBarTitleText": "编辑资料"
+			}
+		},
+		{
+			"path": "pages/profile/notification-settings",
+			"style": {
+				"navigationBarTitleText": "通知偏好"
+			}
+		},
+		{
+			"path": "pages/pm/team",
+			"style": {
+				"navigationBarTitleText": "项目组管理",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/project-auth/management",
+			"style": {
+				"navigationBarTitleText": "授权申请",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/archive/list",
+			"style": {
+				"navigationBarTitleText": "归档管理",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/statistics/index",
+			"style": {
+				"navigationBarTitleText": "统计分析",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/progress/gantt",
+			"style": {
+				"navigationBarTitleText": "项目甘特图"
+			}
+		},
+		{
+			"path": "pages/daily-report/preview",
+			"style": {
+				"navigationBarTitleText": "日报预览",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/document/review",
+			"style": {
+				"navigationBarTitleText": "文档审核",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/system/users",
+			"style": {
+				"navigationBarTitleText": "用户管理",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		},
+		{
+			"path": "pages/workload/report",
+			"style": {
+				"navigationBarTitleText": "工作量填报",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/workload/review",
+			"style": {
+				"navigationBarTitleText": "工作量审核",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/approval/todo",
+			"style": {
+				"navigationBarTitleText": "审批中心",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "IDC项目管家",
+		"navigationBarBackgroundColor": "#1890FF",
+		"backgroundColor": "#F5F7FA",
+		"backgroundColorTop": "#1890FF",
+		"backgroundColorBottom": "#F5F7FA"
+	},
+	"tabBar": {
+		"color": "#5C6370",
+		"selectedColor": "#1890FF",
+		"borderStyle": "black",
+		"backgroundColor": "#FFFFFF",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "工作台",
+				"iconPath": "static/tabbar/workbench.png",
+				"selectedIconPath": "static/tabbar/workbench-active.png"
+			},
+			{
+				"pagePath": "pages/project/list",
+				"text": "项目",
+				"iconPath": "static/tabbar/project.png",
+				"selectedIconPath": "static/tabbar/project-active.png"
+			},
+			{
+				"pagePath": "pages/document/list",
+				"text": "资料",
+				"iconPath": "static/tabbar/document.png",
+				"selectedIconPath": "static/tabbar/document-active.png"
+			},
+			{
+				"pagePath": "pages/profile/profile",
+				"text": "我的",
+				"iconPath": "static/tabbar/profile.png",
+				"selectedIconPath": "static/tabbar/profile-active.png"
+			}
+		]
+	},
+	"uniIdRouter": {},
+	"condition": {
+		"current": 0,
+		"list": [
+			{
+				"name": "登录页",
+				"path": "pages/login/login"
+			}
+		]
+	}
+}

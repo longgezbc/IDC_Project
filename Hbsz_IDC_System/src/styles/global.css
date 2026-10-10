@@ -1,0 +1,1050 @@
+/* ========== 全局变量与主题 ========== */
+:root {
+  /* 主题色 */
+  --primary-color: #1890ff;
+  --primary-light: #40a9ff;
+  --primary-dark: #096dd9;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --danger-color: #f5222d;
+  --info-color: #6b7280; /* WCAG 2.1 AA：白色背景上对比度 4.6:1 */
+
+  /* 文本专用色（WCAG 2.1 AA：背景为白色时对比度 ≥ 4.5:1） */
+  --link-color: #096ddc;
+  --success-text: #389e0d;
+  --warning-text: #d48806;
+  --danger-text: #d4380d;
+  --info-text: #5c6370;
+
+  /* 中性色（WCAG 2.1 AA 对比度优化） */
+  --text-primary: #1f2937;
+  --text-regular: #4b5563;
+  --text-secondary: #595f6b;
+  --text-placeholder: #6b7280;
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
+  --bg-page: #f5f7fa;
+  --bg-card: #ffffff;
+  --bg-hover: #f9fafc;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-base: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-base: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* ========== 大气·光晕（Glow + Grain）Token 体系 ==========
+     方向：亮色运营工具的大气适配 —— 深色"舞台区"横幅 + 光斑呼吸 + 颗粒质感。
+     光斑色：品牌蓝系低饱和延伸（青/蓝/紫），用于 blur 大光晕装饰；
+     颗粒：SVG feTurbulence 噪点 data-uri（零资源请求），压住渐变的塑料感；
+     光晕阴影：hover 时随语义色调泛出彩色辉光，替代中性灰阴影。 */
+  --aurora-blue: #1e8bff;
+  --aurora-cyan: #22d3ee;
+  --aurora-violet: #8b7cf6;
+  --aurora-ink: #0a1e3f;          /* 横幅深色基底（墨蓝，非纯黑） */
+  --grain-opacity: 0.05;          /* 颗粒透明度（深底上更含蓄） */
+
+  /* 彩色光晕阴影（tone 色一致，hover/聚焦时使用） */
+  --glow-primary: 0 6px 22px -4px rgba(24, 144, 255, 0.38);
+  --glow-success: 0 6px 22px -4px rgba(82, 196, 26, 0.35);
+  --glow-warning: 0 6px 22px -4px rgba(250, 173, 20, 0.38);
+  --glow-danger: 0 6px 22px -4px rgba(245, 34, 45, 0.32);
+  --glow-purple: 0 6px 22px -4px rgba(114, 46, 209, 0.32);
+
+  /* 数字字体栈：等宽感数字（编号/指标/坐标），运营数据稳定对齐；
+     中文正文仍走系统栈，此处仅服务数字与拉丁技术元数据 */
+  --font-numeric: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Cascadia Code',
+    'Roboto Mono', Consolas, 'Liberation Mono', monospace;
+
+  /* 动效 Token：缓动曲线与时长（运营工具克制预算） */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ========== 滚动条 ========== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ========== 通用容器 ========== */
+.page-container {
+  padding: 20px 24px;
+  min-height: calc(100vh - 60px);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+  position: relative;
+  padding-left: 12px;
+}
+
+.page-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  border-radius: 2px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ========== 卡片 ========== */
+.card-box {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-base);
+  margin-bottom: 20px;
+  border: 1px solid var(--border-light);
+  transition: box-shadow 0.3s;
+}
+
+.card-box:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* ========== 卡片标题图标芯片 ==========
+   统一替代内联彩色 el-icon（color: #xxx），与 StatCard 组件色板一致；
+   用法：<span class="title-chip title-chip--primary"><el-icon><DataLine /></el-icon></span> */
+.title-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.title-chip--primary { background: #e6f7ff; color: #1890ff; }
+.title-chip--success { background: #f6ffed; color: #52c41a; }
+.title-chip--warning { background: #fffbe6; color: #faad14; }
+.title-chip--danger  { background: #fff1f0; color: #f5222d; }
+.title-chip--purple  { background: #f9f0ff; color: #722ed1; }
+
+/* ========== 统计卡片 ========== */
+.stat-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-base);
+  display: flex;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  /* 光晕 Token（Glow+Grain 铺开）：全局旧版统计卡 hover 泛品牌蓝辉光 */
+  box-shadow: var(--glow-primary);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #fff;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-content .stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+.stat-content .stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.stat-content .stat-trend {
+  font-size: 12px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-trend.up { color: var(--success-color); }
+.stat-trend.down { color: var(--danger-color); }
+
+/* ========== Element Plus 样式覆盖 ========== */
+.el-card {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-base) !important;
+}
+
+.el-card__header {
+  padding: 14px 20px !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.el-button--primary:not(.is-link):not(.is-text):not(.is-plain) {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.el-button--primary:not(.is-link):not(.is-text):not(.is-plain):hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+}
+
+/* plain 朴素按钮样式优化 - 确保文字清晰 */
+.el-button--primary.is-plain {
+  background: #e6f7ff !important;
+  border-color: #91d5ff !important;
+  color: #1890ff !important;
+}
+
+.el-button--primary.is-plain:hover {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.el-button--success.is-plain {
+  background: #f6ffed !important;
+  border-color: #b7eb8f !important;
+  color: #52c41a !important;
+}
+
+.el-button--success.is-plain:hover {
+  background: #52c41a !important;
+  border-color: #52c41a !important;
+  color: #ffffff !important;
+}
+
+.el-button--warning.is-plain {
+  background: #fffbe6 !important;
+  border-color: #ffd591 !important;
+  color: #faad14 !important;
+}
+
+.el-button--warning.is-plain:hover {
+  background: #faad14 !important;
+  border-color: #faad14 !important;
+  color: #ffffff !important;
+}
+
+.el-button--danger.is-plain {
+  background: #fff1f0 !important;
+  border-color: #ffa39e !important;
+  color: #f5222d !important;
+}
+
+.el-button--danger.is-plain:hover {
+  background: #f5222d !important;
+  border-color: #f5222d !important;
+  color: #ffffff !important;
+}
+
+/* 链接型/文字型按钮保持透明背景 */
+.el-button--primary.is-link,
+.el-button--primary.is-text {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--primary-color) !important;
+}
+
+.el-button--primary.is-link:hover,
+.el-button--primary.is-text:hover {
+  color: var(--primary-light) !important;
+  background: rgba(24, 144, 255, 0.06) !important;
+}
+
+/* 禁用按钮样式优化 - 提升文字可读性 */
+.el-button.is-disabled,
+.el-button.is-disabled:hover,
+.el-button.is-disabled:focus {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:hover,
+.el-button--primary.is-disabled:focus {
+  background: #a0c4ff !important;
+  border-color: #a0c4ff !important;
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+}
+
+.el-button--success.is-disabled,
+.el-button--success.is-disabled:hover,
+.el-button--success.is-disabled:focus {
+  background: #b7eb8f !important;
+  border-color: #b7eb8f !important;
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+}
+
+.el-button--warning.is-disabled,
+.el-button--warning.is-disabled:hover,
+.el-button--warning.is-disabled:focus {
+  background: #ffd591 !important;
+  border-color: #ffd591 !important;
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+}
+
+.el-button--danger.is-disabled,
+.el-button--danger.is-disabled:hover,
+.el-button--danger.is-disabled:focus {
+  background: #ffa39e !important;
+  border-color: #ffa39e !important;
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+}
+
+/* 链接型按钮禁用状态 */
+.el-button--primary.is-link.is-disabled,
+.el-button--primary.is-link.is-disabled:hover {
+  color: #a0c4ff !important;
+  opacity: 0.7 !important;
+}
+
+.el-button--danger.is-link.is-disabled,
+.el-button--danger.is-link.is-disabled:hover {
+  color: #ffa39e !important;
+  opacity: 0.7 !important;
+}
+
+.el-button--success.is-link.is-disabled,
+.el-button--success.is-link.is-disabled:hover {
+  color: #b7eb8f !important;
+  opacity: 0.7 !important;
+}
+
+.el-button--warning.is-link.is-disabled,
+.el-button--warning.is-link.is-disabled:hover {
+  color: #ffd591 !important;
+  opacity: 0.7 !important;
+}
+
+/* 默认按钮禁用时文字颜色加深 */
+.el-button.is-disabled:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger),
+.el-button.is-disabled:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):hover {
+  color: #909399 !important;
+  background-color: #f5f7fa !important;
+  border-color: #e4e7ed !important;
+  opacity: 0.8 !important;
+}
+
+.el-table {
+  border-radius: var(--radius-sm);
+}
+
+.el-table th.el-table__cell {
+  background-color: #fafbfc !important;
+  color: var(--text-regular) !important;
+  font-weight: 600;
+}
+
+.el-table tr:hover > td {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 表格响应式适配 */
+.el-table {
+  width: 100% !important;
+}
+
+.el-table .cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 确保操作列按钮不换行（兼容方案：使用 :has() 优先，回退到 .el-table__cell .cell 直接包含 .base-btn 的场景） */
+.el-table .el-table__cell .cell:has(.base-btn) {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+/* 兼容旧浏览器：当 .base-btn 是 .cell 的直接子元素时应用样式 */
+@supports not selector(:has(*)) {
+  .el-table .el-table__cell .cell > .base-btn,
+  .el-table .el-table__cell .cell > div > .base-btn {
+    display: inline-flex;
+    vertical-align: middle;
+  }
+  .el-table .el-table__cell .cell > .base-btn + .base-btn,
+  .el-table .el-table__cell .cell > div > .base-btn + .base-btn {
+    margin-left: 4px;
+  }
+}
+
+/* 操作列按钮间距 */
+.el-table .base-btn + .base-btn {
+  margin-left: 4px;
+}
+
+/* 中等屏幕：减少单元格内边距 */
+@media screen and (max-width: 1200px) {
+  .el-table .el-table__cell {
+    padding: 8px 4px !important;
+  }
+  .el-table .cell {
+    padding: 0 6px;
+  }
+}
+
+/* 小屏幕：进一步压缩 */
+@media screen and (max-width: 768px) {
+  .el-table .el-table__cell {
+    padding: 6px 2px !important;
+  }
+  .el-table .cell {
+    padding: 0 4px;
+    font-size: 12px;
+  }
+  /* 小屏幕下操作按钮只显示图标 */
+  .el-table .base-btn .base-btn__text {
+    display: none;
+  }
+  .el-table .base-btn {
+    padding: 4px !important;
+  }
+  .el-table .base-btn .base-btn__icon {
+    margin-right: 0;
+  }
+}
+
+.el-tag {
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.el-menu-item.is-active {
+  background-color: var(--primary-color) !important;
+}
+
+.el-progress-bar__outer {
+  border-radius: var(--radius-sm);
+}
+
+/* ========== 动画 ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* ========== 工具类 ========== */
+.text-primary { color: var(--primary-color); }
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-danger { color: var(--danger-color); }
+.text-info { color: var(--text-secondary); }
+
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-1 { flex: 1; }
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+
+.mt-sm { margin-top: 8px; }
+.mt-md { margin-top: 16px; }
+.mb-sm { margin-bottom: 8px; }
+.mb-md { margin-bottom: 16px; }
+
+/* ========== 路由过渡动画 ========== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ========== 骨架屏 ========== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-line {
+  height: 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-block {
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 56px;
+  color: var(--text-placeholder);
+  margin-bottom: 16px;
+}
+
+.empty-state__title {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.empty-state__desc {
+  font-size: 13px;
+  color: var(--text-placeholder);
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+/* ========== 焦点样式（无障碍） ========== */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.el-button:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* ========== 表单加载遮罩 ========== */
+.form-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: inherit;
+}
+
+/* ========== 按钮按下反馈 ========== */
+.el-button:not(.is-disabled):not(.is-loading):active {
+  transform: scale(0.97);
+  transition: transform 0.1s;
+}
+
+/* ========== 对话框增强 ========== */
+.el-dialog {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--border-light);
+  padding: 16px 24px !important;
+}
+
+.el-dialog__body {
+  padding: 24px !important;
+}
+
+.el-dialog__footer {
+  border-top: 1px solid var(--border-light);
+  padding: 12px 24px !important;
+}
+
+/* ========== 表格空状态 ========== */
+.el-table__empty-block {
+  min-height: 200px;
+}
+
+.el-table__empty-text {
+  color: var(--text-placeholder);
+  font-size: 14px;
+}
+
+/* ========== 分页增强 ========== */
+.el-pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.el-pagination .el-pagination__total {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ========== 响应式表单 ========== */
+@media screen and (max-width: 768px) {
+  .search-form .el-form-item {
+    margin-bottom: 12px;
+    margin-right: 0 !important;
+    width: 100%;
+  }
+  .search-form .el-form-item__content {
+    width: 100%;
+  }
+  .page-container {
+    padding: 12px;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .card-box {
+    padding: 12px;
+  }
+}
+
+/* ========== 标签动画 ========== */
+.el-tag {
+  transition: all 0.2s;
+}
+
+.el-tag:hover {
+  transform: translateY(-1px);
+}
+
+/* ========== 卡片入场动画 ========== */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-box {
+  animation: cardEnter 0.35s ease-out;
+}
+
+/* ========== 操作确认提示 ========== */
+.confirm-dialog .el-message-box__header {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.confirm-dialog .el-message-box__content {
+  padding: 20px !important;
+}
+
+/* ========== 成功状态动画 ========== */
+@keyframes successPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.success-icon {
+  animation: successPulse 0.4s ease-out;
+}
+
+/* ========== 输入框增强 ========== */
+.el-input__wrapper {
+  transition: box-shadow 0.2s;
+}
+
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15) !important;
+}
+
+/* ========== 下拉选择增强 ========== */
+.el-select .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15) !important;
+}
+
+/* ========== 滚动到顶部按钮 ========== */
+.scroll-top-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  z-index: 999;
+  font-size: 20px;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-top-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ========== WCAG 2.1 AA 无障碍辅助样式 ========== */
+
+/* 屏幕阅读器专用内容（视觉隐藏但屏幕阅读器可读） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* aria-live 动态消息区域：视觉不可见但屏幕阅读器可感知 */
+.sr-only-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 跳转链接：仅在键盘聚焦时显示 */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-sm) 0;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
+/* 焦点增强：确保所有可聚焦元素有清晰可见的焦点状态 */
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible,
+[role="option"]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* 表单错误提示增强：确保错误信息可被屏幕阅读器感知 */
+.el-form-item__error {
+  color: var(--danger-text) !important;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 必填字段标记增强 */
+.el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label::before {
+  content: '*';
+  color: var(--danger-color);
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+/* 对话框无障碍增强：Element Plus el-dialog 默认已含 role="dialog" aria-modal="true" */
+/* 加载状态无障碍：通过 Vue 模板的 aria-live 属性实现 */
+
+/* 动画减弱偏好：尊重用户系统设置（WCAG 2.3.3） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* 禁用脉冲动画（WCAG 2.3.1：避免闪烁） */
+  .skeleton-line,
+  .skeleton-block {
+    animation: none !important;
+    background: #e5e7eb !important;
+  }
+}
+
+/* ========== el-cascader 下拉面板文字可见性修复 ==========
+   下拉面板通过 teleport 渲染到 body，继承全局样式；
+   此处显式覆盖节点标签与悬停态颜色，避免被其他规则覆盖为白色导致不可见。
+*/
+.region-cascader-popper .el-cascader-node__label,
+.region-cascader-popper .el-cascader-node__value {
+  color: var(--text-primary) !important;
+}
+
+.region-cascader-popper .el-cascader-node:hover,
+.region-cascader-popper .el-cascader-node.is-active,
+.region-cascader-popper .el-cascader-node.in-active-path {
+  background-color: var(--el-fill-color-light, #f5f7fa) !important;
+}
+
+.region-cascader-popper .el-cascader-node:hover .el-cascader-node__label,
+.region-cascader-popper .el-cascader-node.is-active .el-cascader-node__label,
+.region-cascader-popper .el-cascader-node.in-active-path .el-cascader-node__label {
+  color: var(--primary-color) !important;
+}
+
+/* ========== 大气·光晕（Glow + Grain）工具类与动效 ==========
+   设计种子：机房光缆辉光 —— 深色舞台区（横幅）+ 呼吸光斑 + 颗粒质感。
+   工具类仅追加不覆盖，供横幅/卡片/图表区组合使用。 */
+
+/* 颗粒噪点覆盖层：SVG feTurbulence data-uri（零请求），压住渐变塑料感。
+   用法：容器内加 <div class="grain-overlay" aria-hidden="true"></div> */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* 光斑（aurora blob）：大 blur 圆形光晕，绝对定位在深色舞台区；
+   呼吸动画 glowPulse 缓慢明暗，营造大气流动感 */
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.06); }
+}
+
+.aurora-blob--anim {
+  animation: glowPulse 7s ease-in-out infinite;
+}
+
+/* 入场编排：带模糊淡入的上浮（比 cardEnter 更有空气感） */
+@keyframes fadeUpBlur {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.fade-up-enter {
+  animation: fadeUpBlur var(--dur-slow) var(--ease-out-quart) backwards;
+}
+
+/* 数字滚动入场：配合 useCountUp 使用，滚动结束时轻微上浮确认 */
+@keyframes numberSettle {
+  0% { transform: translateY(4px); opacity: 0.6; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.number-settle {
+  animation: numberSettle var(--dur-base) var(--ease-out-quart);
+}
+
+/* 等宽数字工具类：编号/指标/技术元数据统一数字质感 */
+.num {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+
+/* 光晕阴影工具类：hover 泛出与语义色一致的辉光 */
+.glow-hover-primary:hover { box-shadow: var(--glow-primary) !important; }
+.glow-hover-success:hover { box-shadow: var(--glow-success) !important; }
+.glow-hover-warning:hover { box-shadow: var(--glow-warning) !important; }
+.glow-hover-danger:hover { box-shadow: var(--glow-danger) !important; }
+.glow-hover-purple:hover { box-shadow: var(--glow-purple) !important; }
+
+/* 光斑呼吸动画的减弱动效降级（呼吸属于持续动画，单独处理） */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob--anim {
+    animation: none !important;
+    opacity: 0.7;
+  }
+
+  .fade-up-enter {
+    animation-duration: 0.01ms !important;
+    filter: none;
+  }
+}

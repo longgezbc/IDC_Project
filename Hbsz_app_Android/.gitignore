@@ -1,0 +1,21 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# 正式签名密钥与凭据（严禁入库；丢失即无法同签名升级，请离线备份）
+hbsz-release.jks
+keystore.properties
+*.jks
+*.keystore

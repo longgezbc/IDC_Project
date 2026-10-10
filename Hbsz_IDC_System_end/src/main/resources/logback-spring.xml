@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    数据中心综合布线项目管理系统 - 日志配置
+    日志级别：TRACE < DEBUG < INFO < WARN < ERROR
+-->
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <!-- 引入 Spring Boot 默认配置，注册 %clr / %wEx 等扩展转换词 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 从 application.yml 读取应用名 -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name"
+                    defaultValue="hbsz-idc-system"/>
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path"
+                    defaultValue="logs"/>
+    <springProperty scope="context" name="APP_PORT" source="server.port"
+                    defaultValue="8080"/>
+
+    <!-- 控制台日志输出格式（使用 Spring Boot 默认 CONSOLE_LOG_PATTERN） -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <!-- 文件日志输出格式（不使用颜色，避免文件中出现 ANSI 转义码） -->
+    <property name="FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %-40.40logger{39} : %m%n%wEx"/>
+
+    <!-- 日志文件最大大小 -->
+    <property name="MAX_FILE_SIZE" value="50MB"/>
+    <!-- 日志文件保留天数 -->
+    <property name="MAX_HISTORY" value="30"/>
+    <!-- 日志文件总大小上限 -->
+    <property name="TOTAL_SIZE_CAP" value="10GB"/>
+
+    <!-- ======================== 控制台输出 ======================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ======================== 全部日志文件 ======================== -->
+    <appender name="FILE_ALL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${APP_NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ======================== 错误日志文件 ======================== -->
+    <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${APP_NAME}-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 只记录 ERROR 级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- ======================== Druid 连接池监控日志文件 ======================== -->
+    <appender name="FILE_DRUID" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-druid.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${APP_NAME}-druid-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ======================== 开发环境配置 ======================== -->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_ALL"/>
+            <appender-ref ref="FILE_ERROR"/>
+        </root>
+        <!-- 项目代码 DEBUG 级别 -->
+        <logger name="com.example.hbsz_idc_system_end" level="DEBUG"/>
+        <!-- MyBatis SQL 日志 -->
+        <logger name="com.example.hbsz_idc_system_end.mapper" level="DEBUG"/>
+        <!-- Druid 连接池监控日志 -->
+        <logger name="com.alibaba.druid.pool" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+        <logger name="com.alibaba.druid.filter.stat" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+        <logger name="com.alibaba.druid.filter" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+    </springProfile>
+
+    <!-- ======================== 生产环境配置 ======================== -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_ALL"/>
+            <appender-ref ref="FILE_ERROR"/>
+        </root>
+        <logger name="com.example.hbsz_idc_system_end" level="INFO"/>
+        <!-- Druid 连接池监控日志（生产环境记录 WARN 及以上，关注泄漏和异常） -->
+        <!-- 注意：CONSOLE 必须包含，否则 Docker 日志中看不到连接失败等关键错误 -->
+        <logger name="com.alibaba.druid.pool" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+        <logger name="com.alibaba.druid.filter.stat" level="WARN" additivity="false">
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+        <logger name="com.alibaba.druid.filter" level="WARN" additivity="false">
+            <appender-ref ref="FILE_DRUID"/>
+        </logger>
+    </springProfile>
+
+    <!-- ======================== 默认 fallback 配置 ========================
+         当未激活任何 profile 时使用（避免日志被完全禁用导致启动错误不可见）。
+         主流程应通过 SPRING_PROFILES_ACTIVE 指定 dev/prod，此处仅为兜底。 -->
+    <springProfile name="!dev &amp; !prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_ALL"/>
+            <appender-ref ref="FILE_ERROR"/>
+        </root>
+        <logger name="com.example.hbsz_idc_system_end" level="DEBUG"/>
+    </springProfile>
+
+</configuration>

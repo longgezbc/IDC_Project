@@ -1,0 +1,54 @@
+# ===== 敏感文件（严禁提交）=====
+.env*
+*.pem
+*.jks
+*.keystore
+smoke_login.sh
+
+# ===== 嵌套 git 临时备份目录（合并推送期间使用）=====
+git_disabled/
+
+# ===== 依赖 / 构建产物 =====
+node_modules/
+dist/
+target/
+build/
+.gradle/
+.kotlin/
+unpackage/
+*.class
+*.war
+
+# ===== 运行产物 / 日志 / 导出 =====
+logs/
+log.txt
+*.log
+.uploads/
+exports/
+
+# ===== 大体积二进制 / 发布物 / 本地工具链 =====
+*.zip
+*.tar.gz
+*.apk
+dist_apk/
+maven/
+deploy_20260920_room_hotfix/
+deploy_20260920_workload_split/
+
+# ===== IDE / 编辑器 / 系统文件 =====
+.idea/
+.vscode/
+.trae/
+*.iml
+.brooks-lint-history.json
+.DS_Store
+Thumbs.db
+local.properties
+eslint-check.json
+eslint-result.json
+fb-err.json
+
+# ===== 业务数据文件（含真实客户/人员信息，按需手动添加）=====
+*.xls
+*.xlsx
+竣工资料最新模板/

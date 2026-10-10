@@ -1,0 +1,8 @@
+# 注意：dist/ 不能排除——Dockerfile 需要 COPY dist/ 进镜像（B1 修复）
+# 此前排除 dist/ 与 Dockerfile COPY 冲突，导致 docker compose build 必然失败
+node_modules/
+.git/
+.idea/
+*.log
+consolerror.text
+.eslintcache
