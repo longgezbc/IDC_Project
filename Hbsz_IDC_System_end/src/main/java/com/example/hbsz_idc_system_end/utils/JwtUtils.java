@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -66,12 +67,26 @@ public class JwtUtils {
     private String audience;
 
     /**
-     * 根据配置密钥构造 HMAC-SHA 签名密钥。
+     * 性能优化（P2-1）：签名密钥在 Bean 初始化时构造一次并缓存。
+     * <p>
+     * 原实现每次 token 生成/解析都重新调用 Keys.hmacShaKeyFor 构造 SecretKey，
+     * 每个 HTTP 请求经 JWT 拦截器 parseToken 都会触发，造成不必要的字节数组处理开销。
+     * 缓存后所有 token 操作复用同一 SecretKey 实例。
+     */
+    private SecretKey signingKey;
+
+    @PostConstruct
+    void initSigningKey() {
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * 获取已缓存的 HMAC-SHA 签名密钥。
      *
      * @return 签名用的 {@link SecretKey}
      */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        return signingKey;
     }
 
     /**

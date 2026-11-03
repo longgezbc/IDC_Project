@@ -17,12 +17,15 @@ import { API_BASE_URL } from './config'
 import { auth } from './auth'
 import { notificationApi } from '@/api/notification'
 
-/** 将 HTTP 基地址转为 WS 协议地址（SockJS 原生 WebSocket 端点） */
+/** 将 HTTP 基地址转为 WS 协议地址（SockJS 原生 WebSocket 端点），URL 不含 token */
 function buildWsUrl() {
 	const base = API_BASE_URL.replace(/^http/, 'ws')
-	const token = auth.getToken()
-	// SockJS 原生 WebSocket 端点：/ws/websocket，token 通过 query 传递（后端握手鉴权）
-	return `${base.replace('/api', '')}/ws/websocket?access_token=${encodeURIComponent(token || '')}`
+	// SockJS 原生 WebSocket 端点：/ws/websocket
+	// 安全修复（P0-1）：原将 token 拼在 URL query（access_token=），会泄露到 Nginx/浏览器访问日志、Referer；
+	// 且后端 JwtHandshakeInterceptor 已移除从 URL 读 token 的逻辑（仅认 Authorization 头），
+	// 导致 URL token 被忽略、握手放行，前端又非 STOMP 客户端不发 CONNECT 帧 → 未授权 WS 连接。
+	// token 改由 connectWs 的握手请求头 Authorization 传递。
+	return `${base.replace('/api', '')}/ws/websocket`
 }
 
 // WS 单例与回调队列
@@ -76,9 +79,20 @@ function connectWs() {
 		isConnecting = false
 		return
 	}
+	// 安全修复（P0-1）：无 token 时不应建立 WS。后端握手在无 token 时会放行（依赖 STOMP CONNECT 帧鉴权），
+	// 但本模块为原生 WebSocket + 轻量心跳，不发 CONNECT 帧，无 token 直连将导致未授权连接。
+	const token = auth.getToken()
+	if (!token) {
+		console.warn('[ws] 无 token，直接降级轮询')
+		isConnecting = false
+		startPolling()
+		return
+	}
 	const url = buildWsUrl()
 	socketTask = uni.connectSocket({
 		url,
+		// token 通过握手请求头传递，后端 JwtHandshakeInterceptor 从 Authorization 头读取并在握手阶段完成鉴权
+		header: { Authorization: `Bearer ${token}` },
 		success: () => { /* 实际连接状态在 onOpen 中确认 */ },
 		fail: (err) => {
 			console.warn('[ws] connectSocket 调用失败', err)

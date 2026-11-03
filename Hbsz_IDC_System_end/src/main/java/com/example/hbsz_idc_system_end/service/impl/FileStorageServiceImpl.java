@@ -233,9 +233,11 @@ public class FileStorageServiceImpl implements IFileStorageService {
             return;
         }
         byte[] header;
-        try {
+        // 性能修复（P2-3）：用 try-with-resources 关闭 MultipartFile 的 InputStream，
+        // 避免并发上传时文件句柄堆积。
+        try (java.io.InputStream is = file.getInputStream()) {
             header = new byte[expected.length];
-            int read = file.getInputStream().read(header);
+            int read = is.read(header);
             if (read < expected.length) {
                 throw new BusinessException(ResultCode.FILE_TYPE_NOT_SUPPORTED,
                         "文件内容不完整或类型不匹配");

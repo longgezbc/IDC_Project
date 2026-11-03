@@ -32,6 +32,12 @@ public class CorsConfig {
     private String allowedOrigins;
 
     /**
+     * 当前 Spring Profile，用于校验生产环境禁止使用通配符 CORS。
+     */
+    @Value("${spring.profiles.active:}")
+    private String activeProfile;
+
+    /**
      * 构建全局 CORS 过滤器。
      * <p>
      * 关键配置：
@@ -49,6 +55,16 @@ public class CorsConfig {
      */
     @Bean
     public CorsFilter corsFilter() {
+        // 安全加固（P1-3）：生产环境禁止使用通配符 * 与 allowCredentials=true 组合。
+        // 原默认值为 *，非 docker 部署（如本地 java -jar 直跑、测试环境）未设环境变量时，
+        // 会以 * + allowCredentials=true 运行，任意站点可携带 Cookie 跨域访问本系统接口。
+        // 生产环境缺失白名单时直接启动失败，杜绝不安全配置静默上生产。
+        if ("prod".equalsIgnoreCase(activeProfile) && "*".equals(allowedOrigins.trim())) {
+            throw new IllegalStateException(
+                    "[CORS][安全] 生产环境禁止使用通配符 * 且 allowCredentials=true，"
+                    + "请通过环境变量 CORS_ALLOWED_ORIGINS 指定显式白名单域名（逗号分隔）");
+        }
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 

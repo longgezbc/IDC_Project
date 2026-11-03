@@ -1,9 +1,13 @@
 # 数据中心综合布线项目管理系统 - Docker 部署文档
 
 > 适用环境：2核2G 轻量云服务器（本地构建产物上传部署）  
-> 文档版本：v1.3  
-> 更新日期：2026-07-21（v1.3 部署修复：mysql-grants、tmpfs、Nginx ^~、小程序图片路径）  
+> 文档版本：v1.4  
+> 更新日期：2026-11-03（v1.4：新增自动化部署脚本 deploy.sh + MySQL 账号分离 + 安全性能修复）  
 > 编译状态：✅ 后端 mvn package 通过 | ✅ 前端 npm run build 通过
+>
+> **推荐：使用自动化部署脚本** `scripts/deploy.sh`，支持参数化部署、健康检查、失败自动回滚。  
+> 快速开始：`./scripts/deploy.sh --branch main`　或　`./scripts/deploy.sh --help`  
+> 本轮全部变更详见 [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 

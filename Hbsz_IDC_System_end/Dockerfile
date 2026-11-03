@@ -15,9 +15,6 @@ LABEL description="数据中心综合布线项目管理系统 - 后端服务"
 
 WORKDIR /app
 
-# 安装 curl 用于健康检查（alpine 版本更轻量）
-RUN apk add --no-cache curl
-
 # 复制本地构建好的 JAR 包（需在服务器上准备好）
 COPY target/Hbsz_IDC_System_end.jar app.jar
 
@@ -45,7 +42,8 @@ ENV SPRING_PROFILES_ACTIVE=prod \
 EXPOSE 8080
 
 # 健康检查（2G 服务器 JVM 启动较慢，start-period 延长到 180s）
+# 使用 busybox wget 替代 curl（alpine 自带，无需额外安装）
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=5 \
-    CMD curl -f http://localhost:8080/api/actuator/health || exit 1
+    CMD wget -qO- http://localhost:8080/api/actuator/health > /dev/null || exit 1
 
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar --spring.profiles.active=${SPRING_PROFILES_ACTIVE}"]

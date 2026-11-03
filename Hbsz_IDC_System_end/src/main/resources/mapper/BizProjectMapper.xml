@@ -159,14 +159,16 @@
 
     <!-- 按月统计项目数量趋势（新增数 + 完成数）：按 DATE_FORMAT(created_at,'%Y-%m') 分组，
          用 SUM(CASE WHEN status='已完成') 聚合当月完成数。
-         性能考虑：WHERE YEAR(created_at)=? 为函数条件，无法命中 created_at 索引，数据量大时可改写为 [年初, 次年初) 区间比较以走索引。 -->
+         性能修复（P1-4）：原 WHERE YEAR(created_at)=#{year} 对列施加函数，无法命中 created_at 索引致全表扫描；
+         改为 [年初, 次年初) 区间比较，让优化器走 created_at 索引。 -->
     <select id="countByMonth" resultType="java.util.Map">
         SELECT
             DATE_FORMAT(created_at, '%Y-%m') AS month,
             COUNT(*) AS `newCount`,
             SUM(CASE WHEN status = '已完成' THEN 1 ELSE 0 END) AS `completedCount`
         FROM biz_project
-        WHERE YEAR(created_at) = #{year}
+        WHERE created_at &gt;= CONCAT(#{year}, '-01-01 00:00:00')
+          AND created_at &lt;  CONCAT(#{year} + 1, '-01-01 00:00:00')
         GROUP BY DATE_FORMAT(created_at, '%Y-%m')
         ORDER BY month
     </select>

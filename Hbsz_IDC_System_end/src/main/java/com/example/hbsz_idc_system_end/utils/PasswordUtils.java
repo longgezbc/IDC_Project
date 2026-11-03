@@ -1,6 +1,7 @@
 package com.example.hbsz_idc_system_end.utils;
 
 import cn.hutool.crypto.digest.BCrypt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +17,15 @@ import org.springframework.stereotype.Component;
 public class PasswordUtils {
 
     /**
+     * BCrypt 计算强度（cost factor）。
+     * <p>
+     * 安全加固（P2-2）：原使用 Hutool 默认 cost=10，2026 年 GPU 暴力破解成本偏低。
+     * 提升至 12，并支持通过配置 hbsz.password.bcrypt-cost 覆盖。
+     */
+    @Value("${hbsz.password.bcrypt-cost:12}")
+    private int bcryptCost;
+
+    /**
      * 对明文密码进行 BCrypt 加密。
      * <p>
      * 每次调用生成随机盐，因此相同明文得到的密文不同，属正常现象。
@@ -24,7 +34,7 @@ public class PasswordUtils {
      * @return 加密后的密文（含盐）
      */
     public String encode(String rawPassword) {
-        return BCrypt.hashpw(rawPassword, BCrypt.gensalt());
+        return BCrypt.hashpw(rawPassword, BCrypt.gensalt(bcryptCost));
     }
 
     /**

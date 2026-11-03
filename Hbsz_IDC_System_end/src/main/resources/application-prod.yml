@@ -98,6 +98,14 @@ spring:
       key-prefix: "hbsz:"
       use-key-prefix: true
 
+  # Flyway 迁移账号配置（P1-2 账号分离）
+  # 迁移使用独立账号 hbsz_migrate（持 DDL + SYSTEM_USER 供 PREPARE 动态 SQL），
+  # 运行时 datasource 用 hbsz_app（仅 DML），实现最小权限原则。
+  # url 默认复用 spring.datasource.url，仅账号分离；其余配置继承 application.yml。
+  flyway:
+    user: ${FLYWAY_USERNAME:hbsz_migrate}
+    password: ${FLYWAY_PASSWORD}
+
 # 日志级别 - 生产环境仅记录 WARN 及以上
 logging:
   level:

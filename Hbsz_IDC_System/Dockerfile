@@ -27,18 +27,12 @@ COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
 # --chown 确保静态文件归属 nginx 用户
 COPY --chown=101:101 dist/ /usr/share/nginx/html
 
-# 安装 curl 用于健康检查
-# 注：alpine 镜像默认仅含 BusyBox wget（不支持 --spider 的正确行为），改用 curl
-USER root
-RUN apk add --no-cache curl
-USER 101
-
 # 监听非特权端口（镜像默认 EXPOSE 8080，此处显式说明）
 EXPOSE 8080
 
-# 健康检查：访问容器内 8080 端口
+# 健康检查：访问容器内 8080 端口（使用 busybox wget，alpine 自带无需安装）
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD wget -qO- http://localhost:8080/ > /dev/null || exit 1
 
 # nginx-unprivileged 默认以 nginx 用户启动，无需 USER 指令
 CMD ["nginx", "-g", "daemon off;"]

@@ -58,8 +58,26 @@ public class StatisticsServiceImpl implements IStatisticsService {
     public StatisticsVO getOverview() {
         StatisticsVO vo = new StatisticsVO();
 
+        // 性能优化（P1-5）：5 次聚合查询彼此独立，原串行执行总耗时为 5 次查询之和。
+        // 改为 CompletableFuture 并行执行（与 exportReport 一致），总耗时降为最慢单次查询。
+        // 使用自定义线程池 statisticsExecutor，避免占用 ForkJoinPool.commonPool 影响其他并行任务。
+        int year = LocalDate.now().getYear();
+        CompletableFuture<Map<String, Object>> overviewFuture =
+                CompletableFuture.supplyAsync(projectMapper::selectOverviewStatistics, statisticsExecutor);
+        CompletableFuture<List<Map<String, Object>>> statusFuture =
+                CompletableFuture.supplyAsync(projectMapper::countByStatus, statisticsExecutor);
+        CompletableFuture<List<Map<String, Object>>> typeFuture =
+                CompletableFuture.supplyAsync(projectMapper::countByType, statisticsExecutor);
+        CompletableFuture<List<Map<String, Object>>> priorityFuture =
+                CompletableFuture.supplyAsync(projectMapper::countByPriority, statisticsExecutor);
+        CompletableFuture<List<Map<String, Object>>> trendFuture =
+                CompletableFuture.supplyAsync(() -> projectMapper.countByMonth(year), statisticsExecutor);
+
+        // 等待全部完成
+        CompletableFuture.allOf(overviewFuture, statusFuture, typeFuture, priorityFuture, trendFuture).join();
+
         // 使用聚合查询替代全表加载，一次查询获取所有概览统计
-        Map<String, Object> overviewStats = projectMapper.selectOverviewStatistics();
+        Map<String, Object> overviewStats = overviewFuture.join();
         vo.setTotalProjects(toInt(overviewStats.get("totalProjects")));
         vo.setActiveProjects(toInt(overviewStats.get("activeProjects")));
         vo.setCompletedProjects(toInt(overviewStats.get("completedProjects")));
@@ -68,13 +86,13 @@ public class StatisticsServiceImpl implements IStatisticsService {
         vo.setAvgProgress(toInt(overviewStats.get("avgProgress")));
 
         // 状态分布
-        vo.setStatusDistribution(projectMapper.countByStatus());
+        vo.setStatusDistribution(statusFuture.join());
         // 类型分布
-        vo.setTypeDistribution(projectMapper.countByType());
+        vo.setTypeDistribution(typeFuture.join());
         // 优先级分布
-        vo.setPriorityDistribution(projectMapper.countByPriority());
+        vo.setPriorityDistribution(priorityFuture.join());
         // 月度趋势（当年）
-        vo.setMonthlyTrend(projectMapper.countByMonth(LocalDate.now().getYear()));
+        vo.setMonthlyTrend(trendFuture.join());
 
         return vo;
     }

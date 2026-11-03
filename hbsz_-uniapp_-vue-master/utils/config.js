@@ -6,9 +6,13 @@
  */
 
 // 后端 API 基地址
-// 开发调试：与 web 端访问同一后端，需在「微信开发者工具 - 详情 - 本地设置」勾选「不校验合法域名」
-// 正式上线前：必须改为 HTTPS 域名，并在小程序后台配置 request 合法域名
-export const API_BASE_URL = 'http://124.220.158.177/api'
+// 安全修复（P0-2）：原硬编码明文 HTTP IP，Authorization 头中的 JWT 可被中间人窃听。
+// 改为按构建环境区分：生产环境必须 HTTPS（小程序后台需配置 request/socket 合法域名）；
+// 开发环境保留原地址用于联调（需在「微信开发者工具 - 详情 - 本地设置」勾选「不校验合法域名」）。
+// TODO: 上线前将 PROD_API_BASE_URL 替换为正式 HTTPS 域名。
+const DEV_API_BASE_URL = 'http://124.220.158.177/api'
+const PROD_API_BASE_URL = 'https://your-domain.com/api'
+export const API_BASE_URL = process.env.NODE_ENV === 'production' ? PROD_API_BASE_URL : DEV_API_BASE_URL
 
 // 应用名称
 export const APP_NAME = 'IDC项目管家'
