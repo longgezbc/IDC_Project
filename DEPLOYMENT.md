@@ -5,9 +5,11 @@
 > 更新日期：2026-11-03（v1.4：新增自动化部署脚本 deploy.sh + MySQL 账号分离 + 安全性能修复）  
 > 编译状态：✅ 后端 mvn package 通过 | ✅ 前端 npm run build 通过
 >
-> **推荐：使用自动化部署脚本** `scripts/deploy.sh`，支持参数化部署、健康检查、失败自动回滚。  
-> 快速开始：`./scripts/deploy.sh --branch main`　或　`./scripts/deploy.sh --help`  
-> 本轮全部变更详见 [CHANGELOG.md](./CHANGELOG.md)
+> **推荐：使用自动化部署脚本**
+> - **首次从 GitHub 部署**：`./scripts/server-init.sh`（自动 clone + 配置 env + 首次部署，支持 SSH key / token 认证）
+> - **后续更新部署**：`./scripts/deploy.sh --branch main`（pull + 构建 + 健康检查 + 失败回滚）
+> - 帮助：`./scripts/server-init.sh --help`　或　`./scripts/deploy.sh --help`
+> - 本轮全部变更详见 [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 
