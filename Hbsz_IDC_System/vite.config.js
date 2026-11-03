@@ -71,15 +71,19 @@ export default defineConfig(({ mode }) => {
           // 静态资源文件名
           assetFileNames: 'assets/[name]-[hash].[ext]',
           // 手动代码分割，将第三方依赖单独打包
-          manualChunks: {
-            // Vue 核心库
-            'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          // 注意：vite 8（rolldown）仅支持函数形式的 manualChunks，
+          // 对象形式会报 "manualChunks is not a function"
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined
+            // Vue 核心库（含 @vue 运行时）
+            if (/[\\/]node_modules[\\/](vue|@vue|vue-router|pinia)[\\/]/.test(id)) return 'vue-vendor'
             // Element Plus UI 库
-            'element-vendor': ['element-plus', '@element-plus/icons-vue'],
+            if (/[\\/]node_modules[\\/](element-plus|@element-plus)[\\/]/.test(id)) return 'element-vendor'
             // 图表库
-            'echarts-vendor': ['echarts'],
+            if (/[\\/]node_modules[\\/]echarts[\\/]/.test(id)) return 'echarts-vendor'
             // 工具库
-            'utils-vendor': ['axios', 'dayjs']
+            if (/[\\/]node_modules[\\/](axios|dayjs)[\\/]/.test(id)) return 'utils-vendor'
+            return undefined
           }
         }
       }
