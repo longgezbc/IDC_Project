@@ -112,14 +112,16 @@ services:
           echo "Attempt $$i/30: MySQL not ready, waiting 2s..."
           sleep 2
         done
-        # 先同步 hbsz_app 密码为 .env.docker 中的 DB_PASSWORD
+        # 先执行权限初始化（CREATE USER IF NOT EXISTS 确保 hbsz_app / hbsz_migrate 存在）
+        # 顺序注意：ALTER USER 要求用户已存在。旧数据卷升级场景下 hbsz_migrate 尚未创建，
+        # 必须先执行本脚本建用户，再 ALTER 同步密码，否则 ALTER 静默失败导致后端 Access denied
+        mysql -h mysql -u root -v < /init-grants.sql
+        # 同步 hbsz_app 密码为 .env.docker 中的 DB_PASSWORD
         # 根因修复：01-schema.sql 硬编码 hbsz_app_2026，与 .env.docker 不一致
         # 注：不用 -v，避免密码泄露到容器日志
         mysql -h mysql -u root -e "ALTER USER 'hbsz_app'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
         # 同步 hbsz_migrate 密码为 .env.docker 中的 FLYWAY_PASSWORD（Flyway 迁移账号，P1-2 账号分离）
         mysql -h mysql -u root -e "ALTER USER 'hbsz_migrate'@'%' IDENTIFIED BY '${FLYWAY_PASSWORD}';"
-        # 再执行权限初始化
-        mysql -h mysql -u root -v < /init-grants.sql
         RESULT=$$?
         if [ $$RESULT -eq 0 ]; then
           echo "Grants applied successfully."
@@ -240,7 +242,7 @@ services:
     networks:
       - hbsz-network
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/actuator/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/api/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -284,7 +286,7 @@ services:
     networks:
       - hbsz-network
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
       interval: 30s
       timeout: 5s
       retries: 3

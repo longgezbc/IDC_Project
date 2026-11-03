@@ -13,6 +13,11 @@
 -- 现收窄为 DML；DDL 与动态 SQL（PREPARE）所需权限改由独立迁移账号 hbsz_migrate 持有。
 -- ----------------------------------------------------------------------------
 CREATE USER IF NOT EXISTS 'hbsz_app'@'%' IDENTIFIED BY 'hbsz_app_2026';
+-- 先回收旧权限再授予最小权限：GRANT 只做叠加，旧数据卷上已有的
+-- ALL PRIVILEGES / SYSTEM_USER 不会被覆盖，必须显式 REVOKE（SYSTEM_USER
+-- 属动态权限，REVOKE ALL PRIVILEGES 不会回收，需单独执行）
+REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'hbsz_app'@'%';
+REVOKE SYSTEM_USER ON *.* FROM 'hbsz_app'@'%';
 GRANT SELECT, INSERT, UPDATE, DELETE ON `hbsz_idc_system`.* TO 'hbsz_app'@'%';
 
 -- ----------------------------------------------------------------------------
