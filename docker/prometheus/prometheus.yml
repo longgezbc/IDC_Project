@@ -1,0 +1,71 @@
+# ============================================================================
+# Prometheus 配置文件 - 监控 hbsz 项目所有服务
+# ============================================================================
+
+global:
+  scrape_interval: 15s          # 全局抓取间隔
+  evaluation_interval: 15s      # 规则评估间隔
+  scrape_timeout: 10s           # 抓取超时
+
+# 告警规则文件（暂不启用，需要时添加）
+# rule_files:
+#   - "alert.rules"
+
+scrape_configs:
+  # --------------------------------------------------------------------------
+  # 1. Prometheus 自身监控
+  # --------------------------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # --------------------------------------------------------------------------
+  # 2. cAdvisor - 容器资源监控（CPU/内存/磁盘/网络）
+  # --------------------------------------------------------------------------
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'cadvisor'
+
+  # --------------------------------------------------------------------------
+  # 3. Node Exporter - 主机系统监控（CPU/内存/磁盘/网络）
+  # --------------------------------------------------------------------------
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'node-exporter'
+
+  # --------------------------------------------------------------------------
+  # 4. 后端 Spring Boot Actuator - 应用监控
+  #    需确保后端添加了 micrometer-registry-prometheus 依赖
+  #    若未添加则跳过此项（不会影响其他监控）
+  # --------------------------------------------------------------------------
+  - job_name: 'backend-spring-boot'
+    metrics_path: '/api/actuator/prometheus'
+    static_configs:
+      - targets: ['backend:8080']
+        labels:
+          service: 'hbsz-backend'
+          app: 'hbsz-idc-system'
+
+  # --------------------------------------------------------------------------
+  # 5. MySQL Exporter - MySQL 数据库监控
+  # --------------------------------------------------------------------------
+  - job_name: 'mysql-exporter'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+        labels:
+          service: 'hbsz-mysql'
+
+  # --------------------------------------------------------------------------
+  # 6. Redis Exporter - Redis 缓存监控
+  # --------------------------------------------------------------------------
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'hbsz-redis'

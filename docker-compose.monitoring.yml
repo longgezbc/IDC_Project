@@ -1,0 +1,217 @@
+# ============================================================================
+# 运维监控扩展 - Docker Compose 配置
+# 使用方式：
+#   cd /root/hbsz
+#   docker-compose --env-file .env.docker -f docker-compose.yml -f docker-compose.monitoring.yml up -d
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # 1. Prometheus - 指标存储与查询引擎
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: hbsz-prometheus
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'       # 数据保留 15 天
+      - '--storage.tsdb.retention.size=2GB'       # 最大占用 2GB
+      - '--web.enable-lifecycle'                  # 支持热加载配置
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - hbsz-network
+    ports:
+      - "127.0.0.1:9090:9090"                      # 仅本机访问，通过 Nginx 代理
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+
+  # ==========================================================================
+  # 2. Grafana - 可视化仪表盘
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana-oss:11.2.0
+    container_name: hbsz-grafana
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_INSTALL_PLUGINS: ""
+      TZ: Asia/Shanghai
+    volumes:
+      - ./docker/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    networks:
+      - hbsz-network
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"                # 对外暴露 Grafana
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
+
+  # ==========================================================================
+  # 3. cAdvisor - 容器资源监控（CPU/内存/磁盘/网络）
+  # ==========================================================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    container_name: hbsz-cadvisor
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - hbsz-network
+    ports:
+      - "127.0.0.1:8081:8080"                      # 仅本机访问
+    command:
+      - '--housekeeping_interval=15s'
+      - '--docker_only=true'
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 32M
+
+  # ==========================================================================
+  # 4. Node Exporter - 主机系统监控
+  # ==========================================================================
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: hbsz-node-exporter
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/.+)($$|/)'
+      - '--collector.netdev.device-exclude=^(veth|docker|br-|lo)'
+    networks:
+      - hbsz-network
+    ports:
+      - "127.0.0.1:9100:9100"                      # 仅本机访问
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
+
+  # ==========================================================================
+  # 5. MySQL Exporter - MySQL 数据库监控
+  # ==========================================================================
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: hbsz-mysql-exporter
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - MYSQLD_EXPORTER_PASSWORD=${DB_PASSWORD:-hbsz_app_2026}
+    command:
+      - '--mysqld.address=mysql:3306'
+      - '--mysqld.username=${DB_USERNAME:-hbsz_app}'
+      - '--collect.info_schema.tables.databases=${MYSQL_DATABASE:-hbsz_idc_system}'
+    networks:
+      - hbsz-network
+    ports:
+      - "127.0.0.1:9104:9104"
+    depends_on:
+      - mysql
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
+
+  # ==========================================================================
+  # 6. Redis Exporter - Redis 缓存监控
+  # ==========================================================================
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: hbsz-redis-exporter
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-hbsz_redis_2026}
+    networks:
+      - hbsz-network
+    ports:
+      - "127.0.0.1:9121:9121"
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 16M
+
+# ============================================================================
+# 数据卷
+# ============================================================================
+volumes:
+  prometheus-data:
+    name: hbsz-prometheus-data
+  grafana-data:
+    name: hbsz-grafana-data
+
+# ============================================================================
+# 网络 - 复用主 compose 的 hbsz-network
+# ============================================================================
+networks:
+  hbsz-network:
+    external: true
