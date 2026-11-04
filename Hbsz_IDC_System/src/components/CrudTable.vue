@@ -40,6 +40,7 @@
       :row-key="rowKey"
       :tree-props="treeProps"
       :default-expand-all="defaultExpandAll"
+      @selection-change="onSelectionChange"
     >
       <slot />
       <template
@@ -113,7 +114,12 @@ const props = defineProps({
   defaultExpandAll: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['update:currentPage', 'update:pageSize', 'change'])
+const emit = defineEmits(['update:currentPage', 'update:pageSize', 'change', 'selection-change'])
+
+/** 表格选择行变化时触发，父组件据此启用批量操作按钮 */
+function onSelectionChange(rows) {
+  emit('selection-change', rows)
+}
 
 // 分页参数的双向绑定代理：父组件用 v-model:current-page / v-model:page-size 绑定 queryParams
 const innerCurrentPage = computed({

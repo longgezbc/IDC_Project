@@ -137,6 +137,7 @@
       :data="pagedProjects"
       :loading="loading"
       :total="total"
+      @selection-change="handleSelectionChange"
     >
       <template #toolbar>
         <div class="toolbar-left">
@@ -163,6 +164,26 @@
           </el-tabs>
         </div>
         <div class="toolbar-right">
+          <template v-if="selectedIds.length > 0">
+            <BaseButton
+              v-if="canArchive"
+              variant="warning"
+              size="small"
+              icon-name="Box"
+              @click="handleBatchArchive"
+            >
+              批量归档({{ selectedIds.length }})
+            </BaseButton>
+            <BaseButton
+              v-if="canDelete"
+              variant="danger"
+              size="small"
+              icon-name="Delete"
+              @click="handleBatchDelete"
+            >
+              批量删除({{ selectedIds.length }})
+            </BaseButton>
+          </template>
           <div class="view-switch">
             <el-tooltip
               content="表格视图"
@@ -192,6 +213,10 @@
         </div>
       </template>
 
+      <el-table-column
+        type="selection"
+        width="45"
+      />
       <el-table-column
         prop="code"
         label="项目编号"
@@ -962,6 +987,52 @@ function handleDelete(row) {
       feedback.error(e.message || '删除失败')
     }
   }).catch(() => {})
+}
+
+/* ===== 批量操作（表格视图多选）===== */
+const selectedIds = ref([])
+const selectedRows = ref([])
+
+/** 表格选择行变化时同步 selectedIds，控制批量按钮显隐 */
+function handleSelectionChange(rows) {
+  selectedRows.value = rows
+  selectedIds.value = rows.map(r => r.id)
+}
+
+/** 批量归档：二次确认后调用批量接口并刷新列表 */
+async function handleBatchArchive() {
+  if (selectedIds.value.length === 0) return
+  try {
+    await feedback.confirm(`确认批量归档选中的 ${selectedIds.value.length} 个项目吗？归档后项目将变为只读状态。`, {
+      title: '批量归档确认', type: 'warning'
+    })
+  } catch { return }
+  try {
+    const res = await projectApi.batchArchive(selectedIds.value)
+    feedback.success(`批量归档完成，共 ${res} 个项目`)
+    selectedIds.value = []
+    selectedRows.value = []
+    fetchList()
+  } catch (e) {
+    feedback.error(e.message || '批量归档失败')
+  }
+}
+
+/** 批量删除：二次确认后调用批量接口并刷新列表 */
+async function handleBatchDelete() {
+  if (selectedIds.value.length === 0) return
+  try {
+    await feedback.confirmDelete(`确认批量删除选中的 ${selectedIds.value.length} 个项目？此操作不可恢复！`)
+  } catch { return }
+  try {
+    const res = await projectApi.batchDelete(selectedIds.value)
+    feedback.success(`批量删除完成，共 ${res} 个项目`)
+    selectedIds.value = []
+    selectedRows.value = []
+    fetchList()
+  } catch (e) {
+    feedback.error(e.message || '批量删除失败')
+  }
 }
 
 /* ===== 项目协作（移交/转移/授权）功能（仅 PM/admin）===== */

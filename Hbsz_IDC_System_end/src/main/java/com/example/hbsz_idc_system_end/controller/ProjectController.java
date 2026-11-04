@@ -10,6 +10,7 @@ import com.example.hbsz_idc_system_end.dto.ProjectQueryDTO;
 import com.example.hbsz_idc_system_end.dto.ProjectSaveDTO;
 import com.example.hbsz_idc_system_end.dto.ProjectStatisticsVO;
 import com.example.hbsz_idc_system_end.dto.ProjectVO;
+import com.example.hbsz_idc_system_end.service.IBatchOperationService;
 import com.example.hbsz_idc_system_end.service.IDocumentService;
 import com.example.hbsz_idc_system_end.service.IProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,10 +44,13 @@ public class ProjectController {
 
     private final IProjectService projectService;
     private final IDocumentService documentService;
+    private final IBatchOperationService batchOperationService;
 
-    public ProjectController(IProjectService projectService, IDocumentService documentService) {
+    public ProjectController(IProjectService projectService, IDocumentService documentService,
+                              IBatchOperationService batchOperationService) {
         this.projectService = projectService;
         this.documentService = documentService;
+        this.batchOperationService = batchOperationService;
     }
 
     /**
@@ -162,6 +166,42 @@ public class ProjectController {
     @PutMapping("/{id}/unarchive")
     public Result<ProjectVO> unarchive(@PathVariable Long id) {
         return Result.success("已取消归档", projectService.unarchive(id));
+    }
+
+    /**
+     * 批量归档项目。
+     * <p>HTTP：PUT /projects/batch/archive。
+     * 权限：{@code project:archive}；记录操作日志。
+     * 全部在单一事务内执行，任一失败整体回滚。
+     *
+     * @param ids 项目ID列表
+     * @return 成功归档数量
+     */
+    @Operation(summary = "批量归档项目", description = "批量归档项目，事务保证原子性")
+    @RequiresPermission("project:archive")
+    @OperationLog(module = "项目管理", type = "批量归档", description = "批量归档项目")
+    @PutMapping("/batch/archive")
+    public Result<Integer> batchArchive(@RequestBody List<Long> ids) {
+        int count = batchOperationService.batchArchiveProjects(ids);
+        return Result.success("批量归档完成，共 " + count + " 个项目", count);
+    }
+
+    /**
+     * 批量删除项目。
+     * <p>HTTP：DELETE /projects/batch。
+     * 权限：{@code project:remove}；记录操作日志。
+     * 全部在单一事务内执行，任一失败整体回滚。
+     *
+     * @param ids 项目ID列表
+     * @return 成功删除数量
+     */
+    @Operation(summary = "批量删除项目", description = "批量删除项目，事务保证原子性")
+    @RequiresPermission("project:remove")
+    @OperationLog(module = "项目管理", type = "批量删除", description = "批量删除项目")
+    @DeleteMapping("/batch")
+    public Result<Integer> batchDelete(@RequestBody List<Long> ids) {
+        int count = batchOperationService.batchDeleteProjects(ids);
+        return Result.success("批量删除完成，共 " + count + " 个项目", count);
     }
 
     /**

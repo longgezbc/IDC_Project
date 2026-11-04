@@ -42,6 +42,28 @@
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>
+        <div class="header-search">
+          <el-autocomplete
+            v-model="searchKeyword"
+            :fetch-suggestions="handleSearch"
+            :trigger-on-focus="false"
+            placeholder="搜索项目/文档/客户..."
+            clearable
+            class="search-input"
+            @select="handleSearchSelect"
+          >
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+            <template #default="{ item }">
+              <div class="search-item">
+                <el-tag size="small" :type="item.tagType" disable-transitions>{{ item.type }}</el-tag>
+                <span class="search-item-name">{{ item.value }}</span>
+                <span class="search-item-extra">{{ item.extra }}</span>
+              </div>
+            </template>
+          </el-autocomplete>
+        </div>
         <div class="header-right">
           <el-tooltip
             content="全屏"
@@ -215,6 +237,7 @@ import { useDocumentStore } from '@/stores/document'
 import { useStatisticsStore } from '@/stores/statistics'
 import { useSystemStore } from '@/stores/system'
 import { feedback } from '@/utils/feedback'
+import { searchApi } from '@/api/search'
 import { startSessionMonitor, stopSessionMonitor } from '@/utils/sessionMonitor'
 // 销毁性能监控（释放 PerformanceObserver 等资源，避免内存泄漏）
 import { destroyPerformanceObserver } from '@/utils/performance'
@@ -226,7 +249,7 @@ import NotificationDrawer from './components/NotificationDrawer.vue'
 import RemindDrawer from './components/RemindDrawer.vue'
 import {
   Fold, Expand, HomeFilled, FullScreen, ChatDotRound, Bell,
-  ArrowDown, User, Setting, SwitchButton, ArrowUp
+  ArrowDown, User, Setting, SwitchButton, ArrowUp, Search
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -304,6 +327,53 @@ const currentTitle = computed(() => route.meta.title || '')
 
 const remindList = computed(() => progressStore.getAllUpcomingKeyTasks())
 const remindCount = computed(() => remindList.value.length)
+
+// ===== 全局搜索 =====
+const searchKeyword = ref('')
+let searchTimer = null
+
+async function handleSearch(queryString, cb) {
+  if (!queryString || queryString.trim().length < 1) {
+    cb([])
+    return
+  }
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(async () => {
+    try {
+      const result = await searchApi.search(queryString.trim(), 5)
+      const suggestions = []
+      if (result.projects) {
+        result.projects.forEach(p => suggestions.push({
+          value: p.name, type: '项目', tagType: 'primary', id: p.id, module: 'project', extra: p.extra || ''
+        }))
+      }
+      if (result.documents) {
+        result.documents.forEach(d => suggestions.push({
+          value: d.name, type: '文档', tagType: 'success', id: d.id, module: 'document', extra: d.extra || ''
+        }))
+      }
+      if (result.customers) {
+        result.customers.forEach(c => suggestions.push({
+          value: c.name, type: '客户', tagType: 'warning', id: c.id, module: 'customer', extra: c.extra || ''
+        }))
+      }
+      cb(suggestions)
+    } catch (e) {
+      cb([])
+    }
+  }, 300)
+}
+
+function handleSearchSelect(item) {
+  if (item.module === 'project') {
+    router.push(`/projects/${item.id}`)
+  } else if (item.module === 'document') {
+    router.push(`/documents?id=${item.id}`)
+  } else if (item.module === 'customer') {
+    router.push(`/customers/${item.id}`)
+  }
+  searchKeyword.value = ''
+}
 
 /**
  * P1-5.6：切换侧边栏折叠状态并持久化到 localStorage
@@ -532,6 +602,39 @@ onBeforeUnmount(() => {
 .collapse-btn:hover {
   color: #1890ff;
   background: #e6f7ff;
+}
+
+.header-search {
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  margin: 0 24px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.search-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.search-item-extra {
+  font-size: 12px;
+  color: #909399;
+  white-space: nowrap;
 }
 
 .header-right {

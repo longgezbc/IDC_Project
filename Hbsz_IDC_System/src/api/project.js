@@ -98,6 +98,32 @@ export const projectApi = {
   },
 
   /**
+   * 批量归档项目
+   * @param {number[]} ids 项目ID列表
+   * @returns {Promise<any>} 成功归档数量
+   */
+  batchArchive(ids) {
+    return request({
+      url: '/projects/batch/archive',
+      method: 'put',
+      data: ids
+    })
+  },
+
+  /**
+   * 批量删除项目
+   * @param {number[]} ids 项目ID列表
+   * @returns {Promise<any>} 成功删除数量
+   */
+  batchDelete(ids) {
+    return request({
+      url: '/projects/batch',
+      method: 'delete',
+      data: ids
+    })
+  },
+
+  /**
    * 下载导入模板（返回 xlsx 文件流）
    * @returns {Promise<any>} 包含 blob 数据的响应对象
    */
