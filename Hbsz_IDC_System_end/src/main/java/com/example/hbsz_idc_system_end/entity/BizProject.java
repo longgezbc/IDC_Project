@@ -1,6 +1,8 @@
 package com.example.hbsz_idc_system_end.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -32,6 +34,14 @@ public class BizProject extends BaseEntity {
 
     /** 项目名称 */
     private String name;
+
+    /** 名称全拼冗余（小写，如 tengxun wulanchabujianan gw m5），由 MetaObjectHandler 随 name 自动生成，供全局搜索拼音匹配 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String namePinyinFull;
+
+    /** 名称拼音首字母冗余（小写，如 txwlcbjagwm5），由 MetaObjectHandler 随 name 自动生成，供全局搜索拼音匹配 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String namePinyinInitials;
 
     /** 项目状态：如 pending待启动/in_progress进行中/completed已完成/paused暂停 */
     private String status;

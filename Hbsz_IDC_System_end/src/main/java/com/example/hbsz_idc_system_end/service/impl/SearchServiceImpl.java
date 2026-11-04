@@ -84,7 +84,10 @@ public class SearchServiceImpl implements ISearchService {
             return Collections.emptyList();
         }
         LambdaQueryWrapper<BizProject> w = new LambdaQueryWrapper<BizProject>()
-                .and(q -> q.like(BizProject::getName, kw).or().like(BizProject::getProjectCode, kw))
+                .and(q -> q.like(BizProject::getName, kw)
+                        .or().like(BizProject::getProjectCode, kw)
+                        .or().like(BizProject::getNamePinyinFull, kw)
+                        .or().like(BizProject::getNamePinyinInitials, kw))
                 .eq(BizProject::getIsArchived, 0);
         if (visibleProjectIds != null) {
             w.in(BizProject::getId, visibleProjectIds);
@@ -106,7 +109,9 @@ public class SearchServiceImpl implements ISearchService {
             return Collections.emptyList();
         }
         LambdaQueryWrapper<BizDocument> w = new LambdaQueryWrapper<BizDocument>()
-                .like(BizDocument::getName, kw);
+                .and(q -> q.like(BizDocument::getName, kw)
+                        .or().like(BizDocument::getNamePinyinFull, kw)
+                        .or().like(BizDocument::getNamePinyinInitials, kw));
         if (visibleProjectIds != null) {
             w.in(BizDocument::getProjectId, visibleProjectIds);
         }
@@ -124,7 +129,10 @@ public class SearchServiceImpl implements ISearchService {
     /** 搜索客户：name/contactPerson 模糊匹配，仅启用状态 */
     private List<SearchItemVO> searchCustomers(String kw, int limit) {
         LambdaQueryWrapper<BizCustomer> w = new LambdaQueryWrapper<BizCustomer>()
-                .and(q -> q.like(BizCustomer::getName, kw).or().like(BizCustomer::getContactPerson, kw))
+                .and(q -> q.like(BizCustomer::getName, kw)
+                        .or().like(BizCustomer::getContactPerson, kw)
+                        .or().like(BizCustomer::getNamePinyinFull, kw)
+                        .or().like(BizCustomer::getNamePinyinInitials, kw))
                 .eq(BizCustomer::getStatus, 1)
                 .last("LIMIT " + limit);
         List<BizCustomer> list = customerMapper.selectList(w);

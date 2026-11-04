@@ -341,19 +341,21 @@ async function handleSearch(queryString, cb) {
   searchTimer = setTimeout(async () => {
     try {
       const result = await searchApi.search(queryString.trim(), 5)
+      // request 拦截器返回完整响应包 {code,message,data}，业务数据在 data 字段
+      const data = result.data || {}
       const suggestions = []
-      if (result.projects) {
-        result.projects.forEach(p => suggestions.push({
+      if (data.projects) {
+        data.projects.forEach(p => suggestions.push({
           value: p.name, type: '项目', tagType: 'primary', id: p.id, module: 'project', extra: p.extra || ''
         }))
       }
-      if (result.documents) {
-        result.documents.forEach(d => suggestions.push({
+      if (data.documents) {
+        data.documents.forEach(d => suggestions.push({
           value: d.name, type: '文档', tagType: 'success', id: d.id, module: 'document', extra: d.extra || ''
         }))
       }
-      if (result.customers) {
-        result.customers.forEach(c => suggestions.push({
+      if (data.customers) {
+        data.customers.forEach(c => suggestions.push({
           value: c.name, type: '客户', tagType: 'warning', id: c.id, module: 'customer', extra: c.extra || ''
         }))
       }

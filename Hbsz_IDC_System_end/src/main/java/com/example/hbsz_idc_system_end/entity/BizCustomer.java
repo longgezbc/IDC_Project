@@ -1,6 +1,8 @@
 package com.example.hbsz_idc_system_end.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -26,6 +28,14 @@ public class BizCustomer extends BaseEntity {
 
     /** 客户名称 */
     private String name;
+
+    /** 名称全拼冗余（小写），由 MetaObjectHandler 随 name 自动生成，供全局搜索拼音匹配 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String namePinyinFull;
+
+    /** 名称拼音首字母冗余（小写），由 MetaObjectHandler 随 name 自动生成，供全局搜索拼音匹配 */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private String namePinyinInitials;
 
     /** 联系人 */
     private String contactPerson;

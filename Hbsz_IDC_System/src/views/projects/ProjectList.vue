@@ -1009,7 +1009,7 @@ async function handleBatchArchive() {
   } catch { return }
   try {
     const res = await projectApi.batchArchive(selectedIds.value)
-    feedback.success(`批量归档完成，共 ${res} 个项目`)
+    feedback.success(`批量归档完成，共 ${res.data} 个项目`)
     selectedIds.value = []
     selectedRows.value = []
     fetchList()
@@ -1026,7 +1026,7 @@ async function handleBatchDelete() {
   } catch { return }
   try {
     const res = await projectApi.batchDelete(selectedIds.value)
-    feedback.success(`批量删除完成，共 ${res} 个项目`)
+    feedback.success(`批量删除完成，共 ${res.data} 个项目`)
     selectedIds.value = []
     selectedRows.value = []
     fetchList()

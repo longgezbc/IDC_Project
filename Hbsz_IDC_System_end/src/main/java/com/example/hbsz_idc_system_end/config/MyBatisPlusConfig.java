@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.example.hbsz_idc_system_end.utils.PinyinUtils;
 
 import java.time.LocalDateTime;
 
@@ -49,6 +50,10 @@ public class MyBatisPlusConfig {
      * <p>
      * 插入时自动填充 createdAt、updatedAt；更新时自动填充 updatedAt，
      * 依赖实体字段上的 {@code @TableField(fill = ...)} 声明生效。
+     * <p>
+     * 拼音冗余列（namePinyinFull / namePinyinInitials）：
+     * 对 BizProject / BizDocument / BizCustomer 三类实体，随 name 自动生成小写全拼与首字母，
+     * 供全局搜索拼音匹配。更新时若 name 为空（部分字段更新）则跳过，保留原拼音值。
      *
      * @return 元对象字段填充处理器
      */
@@ -59,11 +64,38 @@ public class MyBatisPlusConfig {
             public void insertFill(MetaObject metaObject) {
                 this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now());
                 this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+                fillPinyinFields(metaObject);
             }
 
             @Override
             public void updateFill(MetaObject metaObject) {
                 this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+                fillPinyinFields(metaObject);
+            }
+
+            /**
+             * 按 name 生成拼音冗余字段。
+             * name 为空（未随本次写入提交）时跳过，避免把已有拼音覆盖为 null。
+             */
+            private void fillPinyinFields(MetaObject metaObject) {
+                Object entity = metaObject.getOriginalObject();
+                if (!(entity instanceof com.example.hbsz_idc_system_end.entity.BizProject
+                        || entity instanceof com.example.hbsz_idc_system_end.entity.BizDocument
+                        || entity instanceof com.example.hbsz_idc_system_end.entity.BizCustomer)) {
+                    return;
+                }
+                Object nameVal = metaObject.getValue("name");
+                if (!(nameVal instanceof String name) || name.isBlank()) {
+                    return;
+                }
+                String full = PinyinUtils.toFullPinyin(name);
+                String initials = PinyinUtils.toInitials(name);
+                if (full != null) {
+                    this.setFieldValByName("namePinyinFull", full, metaObject);
+                }
+                if (initials != null) {
+                    this.setFieldValByName("namePinyinInitials", initials, metaObject);
+                }
             }
         };
     }
