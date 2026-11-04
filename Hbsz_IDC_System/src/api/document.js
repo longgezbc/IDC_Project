@@ -128,6 +128,20 @@ export const documentApi = {
   },
 
   /**
+   * OnlyOffice 在线编辑配置
+   * @param {number|string} id 文档 ID
+   * @param {string} [mode='edit'] edit 或 view
+   * @returns {Promise<Object>} 编辑器初始化配置（含 JWT 签名）
+   */
+  editConfig(id, mode = 'edit') {
+    return request({
+      url: `/documents/${id}/edit-config`,
+      method: 'get',
+      params: { mode }
+    })
+  },
+
+  /**
    * 审核文档（通过/驳回）
    * @param {number|string} id 文档 ID
    * @param {Object} data { approve: boolean, remark: string }

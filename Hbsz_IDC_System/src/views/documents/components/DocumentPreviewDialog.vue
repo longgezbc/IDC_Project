@@ -44,6 +44,14 @@
       <div class="preview-body">
         <el-empty description="该文件类型暂不支持在线预览，请下载后查看">
           <BaseButton
+            v-if="canEditOnline"
+            variant="success"
+            icon-name="Edit"
+            @click="handleEditOnline"
+          >
+            在线编辑
+          </BaseButton>
+          <BaseButton
             variant="primary"
             icon-name="Download"
             @click="handleDownload"
@@ -53,6 +61,12 @@
         </el-empty>
       </div>
     </div>
+    <!-- OnlyOffice 在线编辑器（全屏对话框） -->
+    <OnlyOfficeEditor
+      v-model:visible="showEditor"
+      :doc-id="doc?.id"
+      mode="edit"
+    />
   </el-dialog>
 </template>
 
@@ -62,11 +76,13 @@
  * 业务用途：展示文档元信息（名称/分类/版本/大小/上传人/上传时间），
  *          提供下载入口。当前不支持在线预览文件内容。
  */
+import { ref, computed } from 'vue'
 import { getCategoryTagType } from '@/utils/format'
 import { getIconClass, getIconComponent } from '../utils/documentIcons'
+import OnlyOfficeEditor from './OnlyOfficeEditor.vue'
 // 注：BaseButton 已在 main.js 全局注册，无需在此导入
 
-defineProps({
+const props = defineProps({
   /** 对话框显隐（v-model:visible） */
   visible: { type: Boolean, default: false },
   /** 待预览的文档对象 */
@@ -74,6 +90,21 @@ defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'download'])
+
+// OnlyOffice 在线编辑器状态
+const showEditor = ref(false)
+
+// 是否支持在线编辑（仅 docx/xlsx/pptx）
+const canEditOnline = computed(() => {
+  if (!props.doc) return false
+  const type = (props.doc.fileType || props.doc.file_type || '').toLowerCase()
+  return ['docx', 'xlsx', 'pptx'].includes(type)
+})
+
+/** 打开 OnlyOffice 在线编辑器 */
+function handleEditOnline() {
+  showEditor.value = true
+}
 
 /** 下载按钮：交由父组件处理（保持对 documentStore.downloadDocument 的访问） */
 function handleDownload() {

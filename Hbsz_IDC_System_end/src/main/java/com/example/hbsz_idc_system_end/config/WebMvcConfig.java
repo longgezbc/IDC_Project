@@ -75,7 +75,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         // 文件名使用 UUID，几乎不可猜测；IFileStorageService 已内置路径穿越防护
                         "/files/preview/**",
                         // WebSocket 端点（STOMP 握手由 JwtHandshakeInterceptor 单独校验 JWT）
-                        "/ws/**"
+                        "/ws/**",
+                        // OnlyOffice 在线编辑：DS 拉取文档原文件 + 保存回调，无用户 token，配置走 JWT 签名校验
+                        "/documents/onlyoffice/**"
                 );
     }
 

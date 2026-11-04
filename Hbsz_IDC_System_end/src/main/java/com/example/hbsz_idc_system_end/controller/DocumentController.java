@@ -6,6 +6,7 @@ import com.example.hbsz_idc_system_end.dto.*;
 import com.example.hbsz_idc_system_end.entity.BizDocument;
 import com.example.hbsz_idc_system_end.service.IDocumentService;
 import com.example.hbsz_idc_system_end.service.IFileStorageService;
+import com.example.hbsz_idc_system_end.service.IOnlyOfficeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,13 +46,15 @@ public class DocumentController {
 
     private final IDocumentService documentService;
     private final IFileStorageService fileStorageService;
+    private final IOnlyOfficeService onlyOfficeService;
     // 引入 ObjectMapper 用于规范化序列化 JSON 响应，避免手动拼接字符串导致转义/编码异常
     private final ObjectMapper objectMapper;
 
     public DocumentController(IDocumentService documentService, IFileStorageService fileStorageService,
-                              ObjectMapper objectMapper) {
+                              IOnlyOfficeService onlyOfficeService, ObjectMapper objectMapper) {
         this.documentService = documentService;
         this.fileStorageService = fileStorageService;
+        this.onlyOfficeService = onlyOfficeService;
         this.objectMapper = objectMapper;
     }
 
@@ -328,6 +331,51 @@ public class DocumentController {
     @PostMapping("/{id}/review")
     public Result<DocumentVO> review(@PathVariable Long id, @Valid @RequestBody DocumentReviewDTO dto) {
         return Result.success("文档审核完成", documentService.review(id, dto));
+    }
+
+    /**
+     * OnlyOffice 在线编辑 - 获取编辑器配置。
+     * <p>HTTP：GET /documents/{id}/edit-config?mode=edit。
+     * 权限：{@code document:edit}。返回前端初始化 DocsAPI.DocEditor 所需配置（含 JWT 签名）。
+     *
+     * @param id   文档 ID
+     * @param mode edit 或 view（默认 edit）
+     * @return OnlyOffice 编辑器配置
+     */
+    @Operation(summary = "OnlyOffice编辑配置", description = "生成在线编辑器初始化配置（含JWT签名）")
+    @RequiresPermission("document:edit")
+    @GetMapping("/{id}/edit-config")
+    public Result<Map<String, Object>> editConfig(@PathVariable Long id,
+                                                   @RequestParam(value = "mode", defaultValue = "edit") String mode) {
+        return Result.success(onlyOfficeService.buildEditConfig(id, mode));
+    }
+
+    /**
+     * OnlyOffice 保存回调（免认证，走 /documents/onlyoffice/** 白名单）。
+     * <p>HTTP：POST /documents/onlyoffice/callback。
+     * OnlyOffice DS 在文档保存时回调此接口，后端下载新版本文件并落盘。
+     *
+     * @param body 回调请求体（status/url/key 等）
+     * @return { error: 0 } 表示成功
+     */
+    @Operation(summary = "OnlyOffice保存回调", description = "接收 OnlyOffice DS 的文档保存回调")
+    @PostMapping("/onlyoffice/callback")
+    public Map<String, Object> onlyofficeCallback(@RequestBody Map<String, Object> body) {
+        return onlyOfficeService.handleCallback(body);
+    }
+
+    /**
+     * OnlyOffice 拉取文档原文件（免认证，走白名单）。
+     * <p>HTTP：GET /documents/onlyoffice/{id}/file。
+     * OnlyOffice DS 从此接口下载文档原文件用于编辑器加载。
+     *
+     * @param id       文档 ID
+     * @param response HTTP 响应
+     */
+    @Operation(summary = "OnlyOffice文档文件", description = "供 OnlyOffice DS 拉取文档原文件")
+    @GetMapping("/onlyoffice/{id}/file")
+    public void onlyofficeFile(@PathVariable Long id, HttpServletResponse response) {
+        onlyOfficeService.downloadFile(id, response);
     }
 
     /**
