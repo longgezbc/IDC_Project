@@ -1,60 +1,49 @@
 # ============================================================================
-# OnlyOffice Document Server - 在线编辑（可选启用）
+# OnlyOffice Document Server 编排文件（文档在线编辑，可选部署）
 # ============================================================================
-# 启用方式：
-#   docker compose --env-file .env.docker \
-#     -f docker-compose.yml -f docker-compose.onlyoffice.yml up -d onlyoffice
-# 单独启动 onlyoffice（主服务已运行时）：
-#   docker compose --env-file .env.docker -f docker-compose.onlyoffice.yml up -d onlyoffice
+# 使用方式（与主栈同机部署）：
+#   首次：docker compose -f docker-compose.onlyoffice.yml --env-file .env.docker up -d
+#   注意：镜像约 3GB，首次拉取耗时较长
 #
-# 资源说明：OnlyOffice DS 建议 ≥2GB 内存。当前 2G 服务器紧张，
-#           建议部署在独立机器，或仅在小范围测试时启动。
-# .env.docker 需新增：
-#   ONLYOFFICE_JWT_SECRET=<openssl rand -base64 32>
-#   ONLYOFFICE_PORT=8082
+# 说明：
+#   - JWT_SECRET 必须与后端 .env.docker 的 ONLYOFFICE_JWT_SECRET 一致
+#   - 加入已存在的外部网络 hbsz-network（主 compose 创建），DS 容器可通过
+#     http://backend:8080 访问后端 API（拉取文档/保存回调）
+#   - 浏览器通过宿主机 8082 端口访问 DS（后端 ONLYOFFICE_SERVER_URL 需与之对应）
 # ============================================================================
+
 services:
   onlyoffice:
-    image: onlyoffice/documentserver:8.2.2
+    image: onlyoffice/documentserver:8.1.3
     container_name: hbsz-onlyoffice
     restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
     environment:
-      JWT_ENABLED: ${ONLYOFFICE_JWT_ENABLED:-true}
+      JWT_ENABLED: "true"
       JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:?ONLYOFFICE_JWT_SECRET is required (set in .env.docker)}
-      USE_UNAUTHORIZED_STORAGE: "true"
+      TZ: Asia/Shanghai
+    ports:
+      - "8082:80"
     volumes:
       - onlyoffice-data:/var/www/onlyoffice/Data
-      - onlyoffice-logs:/var/log/onlyoffice
-      - onlyoffice-cache:/var/lib/onlyoffice
-    ports:
-      # 仅本机访问，前端通过 Nginx 反代 /onlyoffice/ 到此端口
-      - "127.0.0.1:${ONLYOFFICE_PORT:-8082}:80"
+      - onlyoffice-log:/var/log/onlyoffice
     networks:
       - hbsz-network
+    # DS 首次启动需初始化字体/数据库，耗时 1-2 分钟
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/healthcheck || exit 1"]
+      test: ["CMD", "curl", "-fsS", "http://localhost/healthcheck"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-
-volumes:
-  onlyoffice-data:
-    name: hbsz-onlyoffice-data
-  onlyoffice-logs:
-    name: hbsz-onlyoffice-logs
-  onlyoffice-cache:
-    name: hbsz-onlyoffice-cache
+      retries: 10
+      start_period: 180s
+    stop_grace_period: 60s
 
 networks:
   hbsz-network:
     external: true
+    name: hbsz-network
+
+volumes:
+  onlyoffice-data:
+    name: hbsz-onlyoffice-data
+  onlyoffice-log:
+    name: hbsz-onlyoffice-log

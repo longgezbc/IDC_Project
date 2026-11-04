@@ -92,7 +92,10 @@ public class OnlyOfficeServiceImpl implements IOnlyOfficeService {
         Map<String, Object> document = new HashMap<>();
         document.put("fileType", ext);
         document.put("key", docKey);
-        document.put("title", doc.getName() + "." + ext);
+        // 库内 name 可能已含扩展名（历史数据），避免出现 "xxx.xlsx.xlsx" 双后缀
+        String title = doc.getName().toLowerCase().endsWith("." + ext)
+                ? doc.getName() : doc.getName() + "." + ext;
+        document.put("title", title);
         // OnlyOffice DS 从此后端 URL 拉取文档原文件（docker 网络内部地址）
         document.put("url", config.getBackendUrl() + "/api/documents/onlyoffice/" + doc.getId() + "/file");
 
@@ -109,7 +112,10 @@ public class OnlyOfficeServiceImpl implements IOnlyOfficeService {
         result.put("document", document);
         result.put("documentType", documentType);
         result.put("editorConfig", editorConfig);
-        result.put("token", config.getServerUrl() != null ? config.getServerUrl() : "");
+        // 浏览器访问 OnlyOffice DS 的地址：前端据此动态加载 DS 的 api.js
+        result.put("serverUrl", config.getServerUrl());
+        // JWT 未配置时为空 token（DS 侧须 JWT_ENABLED=false 才可用，部署默认启用 JWT）
+        result.put("token", "");
 
         // JWT 签名（OnlyOffice DS 校验配置完整性，防篡改）
         if (StringUtils.hasText(config.getJwtSecret())) {

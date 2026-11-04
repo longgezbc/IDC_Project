@@ -231,6 +231,11 @@ services:
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:-}"
       HBSZ_FILE_UPLOAD_DIR: /app/uploads
       TZ: Asia/Shanghai
+      # OnlyOffice 在线编辑（可选，未配置时默认关闭，不影响既有功能）
+      ONLYOFFICE_ENABLED: "${ONLYOFFICE_ENABLED:-false}"
+      ONLYOFFICE_SERVER_URL: "${ONLYOFFICE_SERVER_URL:-}"
+      ONLYOFFICE_JWT_SECRET: "${ONLYOFFICE_JWT_SECRET:-}"
+      ONLYOFFICE_BACKEND_URL: "${ONLYOFFICE_BACKEND_URL:-http://backend:8080}"
       JAVA_OPTS: "-Xms96m -Xmx160m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -XX:ThreadStackSize=512k -XX:+UseSerialGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/app/logs/heapdump.hprof"
     ports:
       # 仅绑定本机回环：公网无法直连 8080，App/Web 统一走 nginx 80 端口反代
