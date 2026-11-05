@@ -234,6 +234,22 @@ const routes = [
         meta: { title: '操作日志', icon: 'Document', permission: 'system:log:query', menuGroup: '系统管理' }
       },
 
+      // ========== 项目模板管理 ==========
+      {
+        path: 'project-templates',
+        name: 'ProjectTemplateManagement',
+        component: () => import('@/views/templates/ProjectTemplateManagement.vue'),
+        meta: { title: '项目模板', icon: 'Files', permission: 'project:query', menuGroup: '项目管理' }
+      },
+
+      // ========== 材料库存管理 ==========
+      {
+        path: 'materials',
+        name: 'MaterialManagement',
+        component: () => import('@/views/materials/MaterialManagement.vue'),
+        meta: { title: '材料库存', icon: 'Box', permission: 'material:query', menuGroup: '项目管理' }
+      },
+
       // ========== 系统设置 ==========
       {
         path: 'settings',

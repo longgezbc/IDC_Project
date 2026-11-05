@@ -555,6 +555,83 @@
           />
         </el-card>
       </el-tab-pane>
+
+      <el-tab-pane
+        label="项目材料"
+        name="materials"
+      >
+        <el-card class="detail-card">
+          <template #header>
+            <span>材料出库流水（去向追溯）</span>
+          </template>
+          <el-table
+            v-loading="materialFlowsLoading"
+            :data="materialFlows"
+            border
+            size="small"
+          >
+            <el-table-column
+              prop="materialName"
+              label="材料名称"
+              min-width="140"
+            />
+            <el-table-column
+              prop="spec"
+              label="规格"
+              min-width="110"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="quantity"
+              label="出库数量"
+              width="100"
+              align="right"
+            >
+              <template #default="{ row }">
+                {{ row.quantity }} {{ row.unit }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="afterStock"
+              label="出库后库存"
+              width="100"
+              align="right"
+            />
+            <el-table-column
+              prop="operatorName"
+              label="领用人/操作人"
+              width="120"
+            />
+            <el-table-column
+              prop="remark"
+              label="备注"
+              min-width="140"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="createdAt"
+              label="出库时间"
+              width="160"
+            />
+          </el-table>
+          <el-empty
+            v-if="!materialFlowsLoading && !materialFlows.length"
+            description="该项目暂无材料出库记录"
+          />
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane
+        label="项目评论"
+        name="comments"
+      >
+        <el-card class="detail-card">
+          <CommentSection
+            biz-type="project"
+            :biz-id="project.id"
+          />
+        </el-card>
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 添加工程师授权对话框（仅 PM/admin） -->
@@ -627,7 +704,7 @@
  * 数据来源：projectStore（项目详情）、documentStore（关联文档）、progressStore（关联任务），
  *          均按路由 id 拉取。
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProjectStore } from '@/stores/project'
 import { useDocumentStore } from '@/stores/document'
@@ -637,6 +714,8 @@ import { hasPermission } from '@/utils/permission'
 import { projectAuthApi } from '@/api/projectAuthorization'
 import { feedback } from '@/utils/feedback'
 import { isCancelError } from '@/utils/cancelToken'
+import CommentSection from '@/components/CommentSection.vue'
+import { materialApi } from '@/api/material'
 
 const router = useRouter()
 const route = useRoute()
@@ -644,7 +723,31 @@ const projectStore = useProjectStore()
 const documentStore = useDocumentStore()
 const progressStore = useProgressStore()
 
-const activeTab = ref('info')  // 当前激活标签页：info 基本信息 / documents 文档 / progress 任务
+const activeTab = ref('info')  // 当前激活标签页：info 基本信息 / documents 文档 / progress 任务 / materials 材料 / comments 评论
+
+// ===== 项目材料：按去向项目查出库流水（切到 tab 时懒加载） =====
+const materialFlows = ref([])
+const materialFlowsLoading = ref(false)
+const materialFlowsLoaded = ref(false)
+
+async function fetchMaterialFlows() {
+  if (!project.value?.id) return
+  materialFlowsLoading.value = true
+  try {
+    // request 拦截器返回完整响应包 {code,message,data}，分页数据在 data 字段
+    const res = await materialApi.getProjectTransactions(project.value.id, 1, 50)
+    materialFlows.value = (res.data && res.data.records) || []
+    materialFlowsLoaded.value = true
+  } catch (e) {
+    feedback.error(e.message || '查询材料流水失败')
+  } finally {
+    materialFlowsLoading.value = false
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === 'materials' && !materialFlowsLoaded.value) fetchMaterialFlows()
+})
 const loading = ref(false)     // 详情数据加载状态
 
 const project = computed(() => projectStore.currentProject)                              // 当前项目详情

@@ -60,6 +60,26 @@
           项目管理
         </template>
       </el-menu-item>
+      <!-- 项目模板：可复用的项目骨架配置（权限与路由 meta 一致，复用 project:query） -->
+      <el-menu-item
+        v-if="hasPermission('project:query')"
+        index="/project-templates"
+      >
+        <el-icon><Files /></el-icon>
+        <template #title>
+          项目模板
+        </template>
+      </el-menu-item>
+      <!-- 材料库存：入库/出库/库存预警（权限与路由 meta 一致） -->
+      <el-menu-item
+        v-if="hasPermission('material:query')"
+        index="/materials"
+      >
+        <el-icon><Goods /></el-icon>
+        <template #title>
+          材料库存
+        </template>
+      </el-menu-item>
       <!-- 项目协作：项目授权 + 项目组管理（组织架构升级新增的协作模块） -->
       <el-sub-menu
         v-if="hasPermission(['project:auth:request', 'project:team:manage'])"
@@ -311,7 +331,7 @@ import logoImg from '@/static/logo/8da4edb7bc99f55c525d4722e1db8644.jpg'
 import {
   Odometer, Folder, Share, Connection, UserFilled, Document, DataLine, Bell,
   Warning, List, EditPen, OfficeBuilding, Box, DataAnalysis, TrendCharts,
-  Setting, User, Key, Postcard, Histogram, Iphone
+  Setting, User, Key, Postcard, Histogram, Iphone, Files, Goods
 } from '@element-plus/icons-vue'
 
 defineProps({
