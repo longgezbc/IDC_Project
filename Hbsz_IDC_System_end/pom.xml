@@ -22,6 +22,19 @@
         <lombok.version>1.18.26</lombok.version>
     </properties>
 
+    <!-- TinyPinyin 2.0.3 原发布于已关停的 JCenter，Maven Central / JitPack 均已无此包，
+         仅国内公共镜像留有缓存：华为云优先、阿里云兜底 -->
+    <repositories>
+        <repository>
+            <id>huaweicloud-mirror</id>
+            <url>https://repo.huaweicloud.com/repository/maven/</url>
+        </repository>
+        <repository>
+            <id>aliyun-mirror</id>
+            <url>https://maven.aliyun.com/repository/public/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Spring Boot Web -->
         <dependency>

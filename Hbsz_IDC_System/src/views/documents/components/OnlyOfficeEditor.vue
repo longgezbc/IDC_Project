@@ -64,8 +64,8 @@ const props = defineProps({
   /** 编辑模式：edit 或 view */
   mode: { type: String, default: 'edit' }
 })
-const emit = defineEmits(['update:visible'])
-
+// 模板内联使用 $emit，无需接收 defineEmits 返回值（避免 no-unused-vars）
+defineEmits(['update:visible'])
 const loading = ref(false)
 const error = ref('')
 let editor = null
@@ -112,7 +112,8 @@ async function handleOpen() {
       editor = null
     }
     // serverUrl 仅用于加载脚本，不属于 DocsAPI.DocEditor 的合法配置项，剔除后透传
-    const { serverUrl: _ignored, ...editorProps } = config
+    const editorProps = { ...config }
+    delete editorProps.serverUrl
     editor = new window.DocsAPI.DocEditor('onlyoffice-editor', {
       ...editorProps,
       width: '100%',

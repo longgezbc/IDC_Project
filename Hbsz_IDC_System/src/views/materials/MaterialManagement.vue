@@ -19,7 +19,7 @@
       :title="`${alerts.length} 个材料库存预警待处理`" style="margin-bottom: 12px">
       <template #default>
         <span v-for="a in alerts.slice(0,3)" :key="a.id" class="alert-item">
-          {{ a.materialName }}（库存{{ a.currentStock }} < 安全{{ a.safetyStock }}）
+          {{ a.materialName }}（库存{{ a.currentStock }} 低于安全库存{{ a.safetyStock }}）
         </span>
         <BaseButton variant="link" size="small" @click="showAlertsDialog = true">查看全部</BaseButton>
       </template>
